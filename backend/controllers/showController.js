@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import Show from '../models/Show.js';
 import Movie from '../models/Movie.js';
 import Theatre from '../models/Theatre.js';
@@ -28,53 +29,13 @@ export const getAllShows = async (req, res, next) => {
       filter.date = { $gte: queryDate, $lt: nextDay };
     }
 
-    let total = await Show.countDocuments(filter);
-    let shows = await Show.find(filter)
+    const total = await Show.countDocuments(filter);
+    const shows = await Show.find(filter)
       .populate('movie', 'title posterUrl duration language certificate')
       .populate('theatre', 'name location screens amenities')
       .sort({ date: 1, startTime: 1 })
       .skip(skip)
       .limit(limit);
-
-    if (shows.length === 0) {
-      const allTheatres = await Theatre.find({ isActive: true });
-      if (allTheatres.length > 0) {
-        const targetDate = req.query.date ? new Date(req.query.date) : new Date();
-        targetDate.setHours(0, 0, 0, 0);
-        const movieDoc = await Movie.findById(req.params.movieId);
-        const duration = movieDoc ? movieDoc.duration : 140;
-        const defaultTimes = ['10:00', '13:30', '17:00', '20:30'];
-        const newShows = [];
-        for (const t of allTheatres) {
-          const screen = t.screens[0] || { seatLayout: { rows: 10, columns: 15 } };
-          const rows = screen.seatLayout?.rows || 10;
-          const cols = screen.seatLayout?.columns || 15;
-          const seatMap = generateSeatMap(rows, cols);
-          const totalSeats = rows * cols;
-          for (const st of defaultTimes) {
-            newShows.push({
-              movie: req.params.movieId,
-              theatre: t._id,
-              screenNumber: 1,
-              date: targetDate,
-              startTime: st,
-              endTime: calculateEndTime(st, duration + 15),
-              price: { regular: 200, premium: 350, vip: 500 },
-              availableSeats: totalSeats,
-              totalSeats,
-              seatMap,
-              status: 'active',
-            });
-          }
-        }
-        await Show.insertMany(newShows);
-        shows = await Show.find(filter)
-          .populate('movie', 'title posterUrl duration language certificate')
-          .populate('theatre', 'name location screens amenities')
-          .sort({ date: 1, startTime: 1 });
-        total = shows.length;
-      }
-    }
 
     res.status(200).json({
       success: true,
@@ -99,6 +60,10 @@ export const getAllShows = async (req, res, next) => {
  */
 export const getShowById = async (req, res, next) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return next(new ErrorResponse('Show not found', 404));
+    }
+
     const show = await Show.findById(req.params.id)
       .populate('movie', 'title posterUrl duration language certificate genre director')
       .populate('theatre', 'name location screens amenities');
@@ -127,7 +92,27 @@ export const getShowsByMovie = async (req, res, next) => {
     const limit = parseInt(req.query.limit, 10) || 20;
     const skip = (page - 1) * limit;
 
-    const filter = { movie: req.params.movieId, status: 'active' };
+    let targetMovieId = req.params.movieId;
+
+    if (!mongoose.Types.ObjectId.isValid(targetMovieId)) {
+      // Check if maybe queried by demo slug / name
+      const titleSearch = targetMovieId.replace(/^movie_/, '').replace(/_\d+$/, '').replace(/[-_]/g, ' ');
+      const foundMovie = await Movie.findOne({
+        title: { $regex: new RegExp(titleSearch, 'i') },
+      });
+      if (foundMovie) {
+        targetMovieId = foundMovie._id;
+      } else {
+        return res.status(200).json({
+          success: true,
+          count: 0,
+          pagination: { page, limit, totalPages: 0, totalResults: 0 },
+          data: [],
+        });
+      }
+    }
+
+    const filter = { movie: targetMovieId, status: 'active' };
 
     if (req.query.date) {
       const queryDate = new Date(req.query.date);
@@ -177,6 +162,15 @@ export const getShowsByTheatre = async (req, res, next) => {
     const page = parseInt(req.query.page, 10) || 1;
     const limit = parseInt(req.query.limit, 10) || 20;
     const skip = (page - 1) * limit;
+
+    if (!mongoose.Types.ObjectId.isValid(req.params.theatreId)) {
+      return res.status(200).json({
+        success: true,
+        count: 0,
+        pagination: { page, limit, totalPages: 0, totalResults: 0 },
+        data: [],
+      });
+    }
 
     const filter = { theatre: req.params.theatreId, status: 'active' };
 
@@ -285,6 +279,10 @@ export const createShow = async (req, res, next) => {
  */
 export const updateShow = async (req, res, next) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return next(new ErrorResponse('Show not found', 404));
+    }
+
     const show = await Show.findById(req.params.id);
 
     if (!show) {
@@ -323,6 +321,10 @@ export const updateShow = async (req, res, next) => {
  */
 export const deleteShow = async (req, res, next) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return next(new ErrorResponse('Show not found', 404));
+    }
+
     const show = await Show.findByIdAndDelete(req.params.id);
 
     if (!show) {
@@ -345,6 +347,10 @@ export const deleteShow = async (req, res, next) => {
  */
 export const getAvailableSeats = async (req, res, next) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return next(new ErrorResponse('Show not found', 404));
+    }
+
     const show = await Show.findById(req.params.id).select(
       'seatMap availableSeats totalSeats price status'
     );

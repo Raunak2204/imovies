@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import Theatre from '../models/Theatre.js';
 import { ErrorResponse } from '../middleware/errorHandler.js';
 
@@ -51,6 +52,10 @@ export const getAllTheatres = async (req, res, next) => {
  */
 export const getTheatreById = async (req, res, next) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return next(new ErrorResponse('Theatre not found', 404));
+    }
+
     const theatre = await Theatre.findById(req.params.id);
 
     if (!theatre) {
@@ -91,6 +96,10 @@ export const createTheatre = async (req, res, next) => {
  */
 export const updateTheatre = async (req, res, next) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return next(new ErrorResponse('Theatre not found', 404));
+    }
+
     const theatre = await Theatre.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true,
@@ -116,6 +125,10 @@ export const updateTheatre = async (req, res, next) => {
  */
 export const deleteTheatre = async (req, res, next) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return next(new ErrorResponse('Theatre not found', 404));
+    }
+
     const theatre = await Theatre.findByIdAndDelete(req.params.id);
 
     if (!theatre) {

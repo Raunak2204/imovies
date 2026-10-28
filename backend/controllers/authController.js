@@ -6,9 +6,13 @@ import { ErrorResponse } from '../middleware/errorHandler.js';
  * Generate JWT token for a user.
  */
 const generateToken = (userId) => {
-  return jwt.sign({ id: userId }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRE,
-  });
+  return jwt.sign(
+    { id: userId },
+    process.env.JWT_SECRET || 'imovies_jwt_secret_key_2024_secure',
+    {
+      expiresIn: process.env.JWT_EXPIRE || '7d',
+    }
+  );
 };
 
 /**

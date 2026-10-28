@@ -1,0 +1,11 @@
+{
+  "name": "imovies",
+  "version": "1.0.0",
+  "description": "IMovies - Cinema Booking Management System",
+  "private": true,
+  "scripts": {
+    "build": "cd backend && npm install",
+    "start": "cd backend && npm start",
+    "seed": "cd backend && npm run seed"
+  }
+}

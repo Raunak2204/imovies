@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import Booking from '../models/Booking.js';
 import Show from '../models/Show.js';
 import User from '../models/User.js';
@@ -13,6 +14,10 @@ import { generateQRCode, getSeatType } from '../utils/helpers.js';
 export const createBooking = async (req, res, next) => {
   try {
     const { showId, seats } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(showId)) {
+      return next(new ErrorResponse('Show not found', 404));
+    }
 
     // Fetch the show
     const show = await Show.findById(showId);
@@ -58,14 +63,7 @@ export const createBooking = async (req, res, next) => {
       };
     });
 
-    const totalAmount = processedSeats.reduce((sum, seat) => sum + seat.price, 0);
-
-    // Mark seats as booked in the show's seatMap
-    for (const seat of processedSeats) {
-      show.seatMap.set(seat.seatNumber, 'booked');
-    }
-    show.availableSeats -= processedSeats.length;
-    await show.save();
+    const totalAmount = processedSeats.reduce((sum, s) => sum + s.price, 0);
 
     // Create the booking
     const booking = await Booking.create({
@@ -78,11 +76,26 @@ export const createBooking = async (req, res, next) => {
       status: 'pending',
     });
 
-    // Generate QR code
-    booking.qrCode = generateQRCode(booking._id.toString(), req.user._id.toString());
+    // Mark seats as booked in the show's seatMap
+    for (const seat of processedSeats) {
+      show.seatMap.set(seat.seatNumber, 'booked');
+    }
+    show.availableSeats -= processedSeats.length;
+    await show.save();
+
+    // Generate QR code for ticket verification
+    const qrData = JSON.stringify({
+      bookingNumber: booking.bookingNumber,
+      bookingId: booking._id,
+      seats: processedSeats.map((s) => s.seatNumber),
+      totalAmount,
+    });
+    const qrCode = await generateQRCode(qrData);
+
+    booking.qrCode = qrCode;
     await booking.save();
 
-    // Add booking to user's bookings list
+    // Add booking reference to user document
     await User.findByIdAndUpdate(req.user._id, {
       $push: { bookings: booking._id },
     });
@@ -91,12 +104,14 @@ export const createBooking = async (req, res, next) => {
     await Notification.create({
       user: req.user._id,
       title: 'Booking Created',
-      message: `Your booking for ${processedSeats.length} seat(s) has been created. Total: ₹${totalAmount}. Complete payment to confirm.`,
+      message: `Your booking #${booking.bookingNumber} is confirmed for ${processedSeats.length} seat(s).`,
       type: 'booking',
+      data: { bookingId: booking._id },
     });
 
+    // Populate booking details for response
     const populatedBooking = await Booking.findById(booking._id)
-      .populate('movie', 'title posterUrl language')
+      .populate('movie', 'title posterUrl language duration certificate')
       .populate('theatre', 'name location')
       .populate('show', 'date startTime endTime screenNumber');
 
@@ -124,6 +139,10 @@ export const createBooking = async (req, res, next) => {
  */
 export const getBookingById = async (req, res, next) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return next(new ErrorResponse('Booking not found', 404));
+    }
+
     const booking = await Booking.findById(req.params.id)
       .populate('movie', 'title posterUrl language duration certificate')
       .populate('theatre', 'name location')
@@ -203,6 +222,10 @@ export const getUserBookings = async (req, res, next) => {
  */
 export const cancelBooking = async (req, res, next) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return next(new ErrorResponse('Booking not found', 404));
+    }
+
     const booking = await Booking.findById(req.params.id);
 
     if (!booking) {

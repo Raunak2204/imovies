@@ -18,6 +18,10 @@ import Notification from '../models/Notification.js';
 import { generateSeatMap, calculateEndTime } from './helpers.js';
 
 const connectDB = async () => {
+  if (mongoose.connection.readyState === 1) return;
+  if (!process.env.MONGODB_URI) {
+    throw new Error('MONGODB_URI environment variable is not defined.');
+  }
   const conn = await mongoose.connect(process.env.MONGODB_URI);
   console.log(`MongoDB Connected: ${conn.connection.host}`);
 };
@@ -395,7 +399,7 @@ const theatresData = [
 
 // ── Seed Function ────────────────────────────────────────────────────────
 
-const seedDatabase = async () => {
+export const seedDatabase = async ({ exitOnFinish = false } = {}) => {
   try {
     await connectDB();
 
@@ -494,11 +498,39 @@ const seedDatabase = async () => {
     console.log('  rahul@example.com, priya@example.com, amit@example.com');
     console.log('  sneha@example.com, vikram@example.com');
 
-    process.exit(0);
+    if (exitOnFinish) {
+      process.exit(0);
+    }
+    return true;
   } catch (error) {
     console.error('Error seeding database:', error);
-    process.exit(1);
+    if (exitOnFinish) {
+      process.exit(1);
+    }
+    throw error;
   }
 };
 
-seedDatabase();
+export const autoSeedIfEmpty = async () => {
+  try {
+    const movieCount = await Movie.countDocuments();
+    if (movieCount === 0) {
+      console.log('🎬 Database is empty. Automatically seeding initial movies, theatres, shows, and demo accounts...');
+      await seedDatabase({ exitOnFinish: false });
+      console.log('✅ Initial database auto-seed complete!');
+    }
+  } catch (err) {
+    console.error('⚠️ Auto-seed notice:', err.message);
+  }
+};
+
+// Check if run directly from CLI (e.g. `node utils/seeder.js` or `npm run seed`)
+const isDirectRun =
+  process.argv[1] &&
+  path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url));
+
+if (isDirectRun) {
+  seedDatabase({ exitOnFinish: true });
+}
+
+export default seedDatabase;

@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import Movie from '../models/Movie.js';
 import { ErrorResponse } from '../middleware/errorHandler.js';
 
@@ -70,7 +71,20 @@ export const getAllMovies = async (req, res, next) => {
  */
 export const getMovieById = async (req, res, next) => {
   try {
-    const movie = await Movie.findById(req.params.id);
+    let movie = null;
+
+    if (mongoose.Types.ObjectId.isValid(req.params.id)) {
+      movie = await Movie.findById(req.params.id);
+    } else {
+      // Allow fallback lookup by slug/title for demo links
+      const titleSearch = req.params.id
+        .replace(/^movie_/, '')
+        .replace(/_\d+$/, '')
+        .replace(/[-_]/g, ' ');
+      movie = await Movie.findOne({
+        title: { $regex: new RegExp(titleSearch, 'i') },
+      });
+    }
 
     if (!movie) {
       return next(new ErrorResponse('Movie not found', 404));
@@ -110,6 +124,10 @@ export const createMovie = async (req, res, next) => {
  */
 export const updateMovie = async (req, res, next) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return next(new ErrorResponse('Movie not found', 404));
+    }
+
     const movie = await Movie.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true,
@@ -135,6 +153,10 @@ export const updateMovie = async (req, res, next) => {
  */
 export const deleteMovie = async (req, res, next) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return next(new ErrorResponse('Movie not found', 404));
+    }
+
     const movie = await Movie.findByIdAndDelete(req.params.id);
 
     if (!movie) {

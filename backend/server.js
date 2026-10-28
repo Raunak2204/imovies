@@ -7,6 +7,7 @@ import morgan from 'morgan';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import mongoose from 'mongoose';
 
 import connectDB from './config/db.js';
 import { generalLimiter } from './middleware/rateLimiter.js';
@@ -33,6 +34,9 @@ connectDB();
 const app = express();
 const httpServer = createServer(app);
 
+// Trust proxy for reverse proxies (Render, Vercel, Heroku) so rate limiter gets real client IP
+app.set('trust proxy', 1);
+
 // Socket.IO setup
 const io = new Server(httpServer, {
   cors: {
@@ -52,6 +56,34 @@ app.use(generalLimiter);
 // Static files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
+// Root & Health check routes for Render / uptime monitoring
+app.get('/', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'IMovies Cinema API is running',
+    database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
+    timestamp: new Date().toISOString(),
+  });
+});
+
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'IMovies API is healthy',
+    database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
+    timestamp: new Date().toISOString(),
+  });
+});
+
+app.get('/api/v1/health', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'IMovies API is healthy',
+    database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
+    timestamp: new Date().toISOString(),
+  });
+});
+
 // API Routes
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/movies', movieRoutes);
@@ -60,11 +92,6 @@ app.use('/api/v1/shows', showRoutes);
 app.use('/api/v1/bookings', bookingRoutes);
 app.use('/api/v1/payments', paymentRoutes);
 app.use('/api/v1/notifications', notificationRoutes);
-
-// Health check
-app.get('/api/v1/health', (req, res) => {
-  res.json({ success: true, message: 'IMovies API is running', timestamp: new Date().toISOString() });
-});
 
 // Socket.IO events
 io.on('connection', (socket) => {
@@ -109,9 +136,13 @@ app.use((req, res) => {
 });
 
 const PORT = process.env.PORT || 5000;
-httpServer.listen(PORT, () => {
+httpServer.listen(PORT, '0.0.0.0', () => {
   logger.info(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
-  console.log(`🎬 IMovies server running on http://localhost:${PORT}`);
+  console.log(`🎬 IMovies server running on port ${PORT}`);
+});
+
+process.on('unhandledRejection', (err) => {
+  logger.error(`Unhandled Rejection: ${err.message}`, { stack: err.stack });
 });
 
 export { io };

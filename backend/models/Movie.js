@@ -89,8 +89,8 @@ const movieSchema = new mongoose.Schema({
   },
 });
 
-// Text index for search
-movieSchema.index({ title: 'text', description: 'text' });
+// Text index for search with language_override disabled to prevent Hindi language error
+movieSchema.index({ title: 'text', description: 'text' }, { language_override: 'none' });
 
 const Movie = mongoose.model('Movie', movieSchema);
 export default Movie;
