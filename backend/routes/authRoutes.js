@@ -6,8 +6,9 @@ import {
   updateProfile,
   changePassword,
   logout,
+  getAllUsers,
 } from '../controllers/authController.js';
-import { protect } from '../middleware/auth.js';
+import { protect, authorize } from '../middleware/auth.js';
 import { registerValidation, loginValidation } from '../middleware/validator.js';
 import { authLimiter } from '../middleware/rateLimiter.js';
 
@@ -20,5 +21,8 @@ router.get('/profile', protect, getMe);
 router.put('/profile', protect, updateProfile);
 router.put('/change-password', protect, changePassword);
 router.post('/logout', protect, logout);
+
+// Admin user management routes
+router.get('/users', protect, authorize('admin'), getAllUsers);
 
 export default router;

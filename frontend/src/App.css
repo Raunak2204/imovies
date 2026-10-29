@@ -443,3 +443,66 @@ body {
     padding: 16px;
   }
 }
+
+
+/* ===== Print Styles for Cinema Tickets ===== */
+@media print {
+  /* Hide search bar, navbar, footer, buttons, toasts, and any non-print elements */
+  nav,
+  header,
+  footer,
+  .no-print,
+  .search-bar,
+  .MuiAppBar-root,
+  .MuiDrawer-root,
+  .Toastify,
+  button,
+  .MuiButton-root,
+  .MuiDialog-root {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
+  /* Reset body styling for crisp print */
+  html, body {
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+    color: #1a1a2e !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .app, .main-content {
+    min-height: auto !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: block !important;
+    background: transparent !important;
+  }
+
+  /* Isolate and format only the printable cinema ticket */
+  #printable-ticket {
+    display: block !important;
+    visibility: visible !important;
+    width: 100% !important;
+    max-width: 680px !important;
+    margin: 20px auto !important;
+    box-shadow: none !important;
+    border: 2px solid #0f3460 !important;
+    border-radius: 16px !important;
+    overflow: hidden !important;
+    background: #16213e !important;
+    color: #ffffff !important;
+    page-break-inside: avoid !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  #printable-ticket * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}

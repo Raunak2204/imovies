@@ -2,6 +2,8 @@ import mongoose from 'mongoose';
 import Booking from '../models/Booking.js';
 import Show from '../models/Show.js';
 import User from '../models/User.js';
+import Movie from '../models/Movie.js';
+import Theatre from '../models/Theatre.js';
 import Notification from '../models/Notification.js';
 import { ErrorResponse } from '../middleware/errorHandler.js';
 import { generateQRCode, getSeatType } from '../utils/helpers.js';
@@ -156,7 +158,7 @@ export const getBookingById = async (req, res, next) => {
 
     // Ensure user can only see their own bookings (unless admin)
     if (
-      booking.user._id.toString() !== req.user._id.toString() &&
+      booking.user?._id?.toString() !== req.user._id.toString() &&
       req.user.role !== 'admin'
     ) {
       return next(
@@ -181,7 +183,7 @@ export const getBookingById = async (req, res, next) => {
 export const getUserBookings = async (req, res, next) => {
   try {
     const page = parseInt(req.query.page, 10) || 1;
-    const limit = parseInt(req.query.limit, 10) || 10;
+    const limit = parseInt(req.query.limit, 10) || 20;
     const skip = (page - 1) * limit;
 
     const filter = { user: req.user._id };
@@ -207,6 +209,7 @@ export const getUserBookings = async (req, res, next) => {
         limit,
         totalPages: Math.ceil(total / limit),
         totalResults: total,
+        total,
       },
       data: bookings,
     });
@@ -293,7 +296,7 @@ export const cancelBooking = async (req, res, next) => {
 export const getAllBookings = async (req, res, next) => {
   try {
     const page = parseInt(req.query.page, 10) || 1;
-    const limit = parseInt(req.query.limit, 10) || 10;
+    const limit = parseInt(req.query.limit, 10) || 20;
     const skip = (page - 1) * limit;
 
     const filter = {};
@@ -316,16 +319,101 @@ export const getAllBookings = async (req, res, next) => {
       .skip(skip)
       .limit(limit);
 
+    // Compute total revenue and tickets for confirmed bookings
+    const statsResult = await Booking.aggregate([
+      { $match: { status: 'confirmed' } },
+      {
+        $group: {
+          _id: null,
+          totalRevenue: { $sum: '$totalAmount' },
+          totalTickets: { $sum: { $size: '$seats' } },
+        },
+      },
+    ]);
+
+    const totalRevenue = statsResult[0]?.totalRevenue || 0;
+    const totalTickets = statsResult[0]?.totalTickets || 0;
+
     res.status(200).json({
       success: true,
       count: bookings.length,
+      totalRevenue,
+      totalTickets,
       pagination: {
         page,
         limit,
         totalPages: Math.ceil(total / limit),
         totalResults: total,
+        total,
       },
       data: bookings,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Get dashboard statistics for admin
+ * @route   GET /api/v1/bookings/stats
+ * @access  Private/Admin
+ */
+export const getDashboardStats = async (req, res, next) => {
+  try {
+    const [
+      totalBookings,
+      confirmedBookings,
+      totalUsers,
+      totalMovies,
+      totalTheatres,
+      recentBookings,
+      recentUsers,
+      statsAggregate,
+    ] = await Promise.all([
+      Booking.countDocuments(),
+      Booking.countDocuments({ status: 'confirmed' }),
+      User.countDocuments({ role: 'user' }),
+      Movie.countDocuments(),
+      Theatre.countDocuments(),
+      Booking.find()
+        .populate('user', 'name email phone')
+        .populate('movie', 'title posterUrl')
+        .populate('theatre', 'name location')
+        .populate('show', 'date startTime screenNumber')
+        .sort({ createdAt: -1 })
+        .limit(10),
+      User.find()
+        .select('-password')
+        .sort({ createdAt: -1 })
+        .limit(8),
+      Booking.aggregate([
+        { $match: { status: 'confirmed' } },
+        {
+          $group: {
+            _id: null,
+            totalRevenue: { $sum: '$totalAmount' },
+            totalTickets: { $sum: { $size: '$seats' } },
+          },
+        },
+      ]),
+    ]);
+
+    const totalRevenue = statsAggregate[0]?.totalRevenue || 0;
+    const totalTickets = statsAggregate[0]?.totalTickets || 0;
+
+    res.status(200).json({
+      success: true,
+      data: {
+        totalRevenue,
+        totalBookings,
+        confirmedBookings,
+        totalTickets,
+        totalUsers,
+        totalMovies,
+        totalTheatres,
+        recentBookings,
+        recentUsers,
+      },
     });
   } catch (error) {
     next(error);

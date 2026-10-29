@@ -16,6 +16,7 @@ const Footer = () => {
   return (
     <Box
       component="footer"
+      className="no-print"
       sx={{
         bgcolor: '#0d1524',
         borderTop: '1px solid rgba(255,255,255,0.05)',

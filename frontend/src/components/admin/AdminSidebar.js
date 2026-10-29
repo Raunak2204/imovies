@@ -14,14 +14,16 @@ import MovieIcon from '@mui/icons-material/Movie';
 import TheatersIcon from '@mui/icons-material/Theaters';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
+import PeopleIcon from '@mui/icons-material/People';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 const menuItems = [
   { label: 'Dashboard', path: '/admin/dashboard', icon: <DashboardIcon /> },
+  { label: 'Users', path: '/admin/users', icon: <PeopleIcon /> },
+  { label: 'Bookings', path: '/admin/bookings', icon: <ConfirmationNumberIcon /> },
   { label: 'Movies', path: '/admin/movies', icon: <MovieIcon /> },
   { label: 'Theatres', path: '/admin/theatres', icon: <TheatersIcon /> },
   { label: 'Shows', path: '/admin/shows', icon: <AccessTimeIcon /> },
-  { label: 'Bookings', path: '/admin/bookings', icon: <ConfirmationNumberIcon /> },
 ];
 
 const AdminSidebar = () => {

@@ -184,3 +184,56 @@ export const logout = async (req, res, next) => {
     next(error);
   }
 };
+
+
+/**
+ * @desc    Get all registered users (Admin only)
+ * @route   GET /api/v1/auth/users
+ * @access  Private/Admin
+ */
+export const getAllUsers = async (req, res, next) => {
+  try {
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 100;
+    const skip = (page - 1) * limit;
+
+    const filter = {};
+    if (req.query.role) {
+      filter.role = req.query.role;
+    }
+    if (req.query.search) {
+      filter.$or = [
+        { name: { $regex: req.query.search, $options: 'i' } },
+        { email: { $regex: req.query.search, $options: 'i' } },
+        { phone: { $regex: req.query.search, $options: 'i' } },
+      ];
+    }
+
+    const total = await User.countDocuments(filter);
+    const users = await User.find(filter)
+      .select('-password')
+      .populate({
+        path: 'bookings',
+        select: 'bookingNumber totalAmount status createdAt seats movie',
+        populate: { path: 'movie', select: 'title' },
+      })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    res.status(200).json({
+      success: true,
+      count: users.length,
+      pagination: {
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+        totalResults: total,
+        total,
+      },
+      data: users,
+    });
+  } catch (error) {
+    next(error);
+  }
+};

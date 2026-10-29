@@ -172,6 +172,7 @@ const Navbar = () => {
     <>
       <AppBar
         position="sticky"
+        className="no-print"
         sx={{
           background: 'linear-gradient(180deg, rgba(22,33,62,0.98) 0%, rgba(22,33,62,0.95) 100%)',
           backdropFilter: 'blur(10px)',
@@ -233,6 +234,7 @@ const Navbar = () => {
           {/* Center: Search */}
           {!isMobile && (
             <Box
+              className="search-bar no-print"
               sx={{
                 display: 'flex',
                 alignItems: 'center',
@@ -368,7 +370,7 @@ const Navbar = () => {
 
         {/* Mobile search bar */}
         {isMobile && searchOpen && (
-          <Box sx={{ px: 2, pb: 1.5 }}>
+          <Box sx={{ px: 2, pb: 1.5 }} className="no-print">
             <Box
               sx={{
                 display: 'flex',
@@ -397,6 +399,7 @@ const Navbar = () => {
         anchor="left"
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
+        className="no-print"
         PaperProps={{ sx: { bgcolor: '#16213e' } }}
       >
         {drawerContent}

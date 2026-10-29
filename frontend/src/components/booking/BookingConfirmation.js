@@ -30,13 +30,19 @@ const BookingConfirmation = ({ booking }) => {
   const posterSrc = getVerifiedPoster(movie);
 
   const handlePrint = () => {
+    const originalTitle = document.title;
+    const refCode = _id ? _id.slice(-8).toUpperCase() : 'TICKET';
+    document.title = `IMovies_Ticket_${refCode}`;
     window.print();
+    setTimeout(() => {
+      document.title = originalTitle;
+    }, 1000);
   };
 
   return (
     <Box sx={{ maxWidth: 720, mx: 'auto', py: 4 }}>
       {/* Success Badge */}
-      <Box sx={{ textAlign: 'center', mb: 4 }} className="fade-in">
+      <Box sx={{ textAlign: 'center', mb: 4 }} className="fade-in no-print">
         <CheckCircleOutlineIcon sx={{ fontSize: 72, color: '#4caf50', mb: 1 }} />
         <Typography variant="h4" fontWeight={800} color="#fff">
           Booking Confirmed!
@@ -248,7 +254,7 @@ const BookingConfirmation = ({ booking }) => {
       </Paper>
 
       {/* Actions */}
-      <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, flexWrap: 'wrap' }}>
+      <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, flexWrap: 'wrap' }} className="no-print">
         <Button
           variant="contained"
           startIcon={<PrintIcon />}

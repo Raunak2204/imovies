@@ -7,6 +7,10 @@ import { saveMockBooking, getMockBookingById, MOCK_MOVIES, MOCK_THEATRES } from 
 export const createBooking = createAsyncThunk('bookings/create', async (data, { rejectWithValue, getState }) => {
   try {
     const result = await bookingService.createBooking(data);
+    const bookingRecord = result.data || result.booking || result;
+    if (bookingRecord && bookingRecord._id) {
+      saveMockBooking(bookingRecord);
+    }
     return result;
   } catch (err) {
     // Graceful offline mock booking creation
@@ -61,20 +65,59 @@ export const fetchBookingById = createAsyncThunk('bookings/fetchById', async (id
 });
 
 export const fetchUserBookings = createAsyncThunk('bookings/fetchUserBookings', async (_, { rejectWithValue }) => {
+  let serverBookings = [];
   try {
     const data = await bookingService.getUserBookings();
-    return data;
+    serverBookings = data.data || data.bookings || [];
   } catch (err) {
-    const stored = JSON.parse(localStorage.getItem('imovies_mock_bookings') || '[]');
-    return { data: stored };
+    // If server call fails, fallback gracefully
+    console.warn('Server bookings unreachable, falling back to local storage');
   }
+
+  // Always merge with local storage bookings to ensure no tickets ever disappear
+  const localBookings = JSON.parse(localStorage.getItem('imovies_mock_bookings') || '[]');
+
+  const map = new Map();
+  // Add server bookings first
+  serverBookings.forEach((b) => {
+    const key = b._id || b.bookingNumber;
+    if (key) map.set(key, b);
+  });
+  // Merge local bookings
+  localBookings.forEach((b) => {
+    const key = b._id || b.bookingNumber;
+    if (key && !map.has(key)) {
+      map.set(key, b);
+    }
+  });
+
+  const combined = Array.from(map.values());
+  // Sort latest first
+  combined.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
+  return { data: combined };
 });
 
 export const cancelBooking = createAsyncThunk('bookings/cancel', async (id, { rejectWithValue }) => {
   try {
     const data = await bookingService.cancelBooking(id);
+    // Update local storage too
+    try {
+      const stored = JSON.parse(localStorage.getItem('imovies_mock_bookings') || '[]');
+      const updated = stored.map((b) => (b._id === id || b.bookingNumber === id ? { ...b, status: 'cancelled' } : b));
+      localStorage.setItem('imovies_mock_bookings', JSON.stringify(updated));
+    } catch (e) {
+      console.error(e);
+    }
     return { id, ...data };
   } catch (err) {
+    try {
+      const stored = JSON.parse(localStorage.getItem('imovies_mock_bookings') || '[]');
+      const updated = stored.map((b) => (b._id === id || b.bookingNumber === id ? { ...b, status: 'cancelled' } : b));
+      localStorage.setItem('imovies_mock_bookings', JSON.stringify(updated));
+    } catch (e) {
+      console.error(e);
+    }
     return { id, success: true };
   }
 });
@@ -94,7 +137,7 @@ export const fetchAllBookings = createAsyncThunk('bookings/fetchAll', async (par
 const bookingSlice = createSlice({
   name: 'bookings',
   initialState: {
-    bookings: [],
+    bookings: JSON.parse(localStorage.getItem('imovies_mock_bookings') || '[]'),
     currentBooking: null,
     loading: false,
     error: null,
@@ -111,6 +154,26 @@ const bookingSlice = createSlice({
     clearBookingError(state) {
       state.error = null;
     },
+    markBookingConfirmed(state, action) {
+      const bId = action.payload;
+      if (state.currentBooking && (state.currentBooking._id === bId || state.currentBooking.bookingNumber === bId)) {
+        state.currentBooking.status = 'confirmed';
+      }
+      state.bookings = state.bookings.map((b) =>
+        b._id === bId || b.bookingNumber === bId ? { ...b, status: 'confirmed' } : b
+      );
+
+      // Sync local storage
+      try {
+        const stored = JSON.parse(localStorage.getItem('imovies_mock_bookings') || '[]');
+        const updated = stored.map((b) =>
+          b._id === bId || b.bookingNumber === bId ? { ...b, status: 'confirmed' } : b
+        );
+        localStorage.setItem('imovies_mock_bookings', JSON.stringify(updated));
+      } catch (e) {
+        console.error(e);
+      }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -121,7 +184,15 @@ const bookingSlice = createSlice({
       })
       .addCase(createBooking.fulfilled, (state, action) => {
         state.loading = false;
-        state.currentBooking = action.payload.data || action.payload.booking || action.payload;
+        const b = action.payload.data || action.payload.booking || action.payload;
+        state.currentBooking = b;
+        if (b) {
+          const key = b._id || b.bookingNumber;
+          const exists = state.bookings.some((item) => (item._id || item.bookingNumber) === key);
+          if (!exists) {
+            state.bookings.unshift(b);
+          }
+        }
       })
       .addCase(createBooking.rejected, (state, action) => {
         state.loading = false;
@@ -176,5 +247,5 @@ const bookingSlice = createSlice({
   },
 });
 
-export const { clearCurrentBooking, clearBookingError } = bookingSlice.actions;
+export const { clearCurrentBooking, clearBookingError, markBookingConfirmed } = bookingSlice.actions;
 export default bookingSlice.reducer;

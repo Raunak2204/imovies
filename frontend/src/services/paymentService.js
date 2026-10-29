@@ -1,5 +1,19 @@
 import API from './api';
 
+const updateLocalMockBookingStatus = (bookingId, status = 'confirmed', transactionId = '') => {
+  try {
+    const existing = JSON.parse(localStorage.getItem('imovies_mock_bookings') || '[]');
+    const updated = existing.map((b) =>
+      b._id === bookingId || b.bookingNumber === bookingId
+        ? { ...b, status, ...(transactionId ? { transactionId } : {}) }
+        : b
+    );
+    localStorage.setItem('imovies_mock_bookings', JSON.stringify(updated));
+  } catch (e) {
+    console.error('Error updating local mock booking:', e);
+  }
+};
+
 /**
  * Create a Razorpay order from the backend.
  * @param {string} bookingId
@@ -29,18 +43,10 @@ export const createRazorpayOrder = async (bookingId) => {
 export const verifyRazorpayPayment = async (data) => {
   try {
     const response = await API.post('/payments/razorpay/verify', data);
+    updateLocalMockBookingStatus(data.bookingId, 'confirmed', data.razorpay_payment_id);
     return response.data;
   } catch (err) {
-    // Sync with local storage mock booking
-    try {
-      const existing = JSON.parse(localStorage.getItem('imovies_mock_bookings') || '[]');
-      const updated = existing.map((b) =>
-        b._id === data.bookingId ? { ...b, status: 'confirmed', transactionId: data.razorpay_payment_id } : b
-      );
-      localStorage.setItem('imovies_mock_bookings', JSON.stringify(updated));
-    } catch (e) {
-      console.error(e);
-    }
+    updateLocalMockBookingStatus(data.bookingId, 'confirmed', data.razorpay_payment_id);
 
     return {
       success: true,
@@ -65,16 +71,10 @@ export const verifyRazorpayPayment = async (data) => {
 export const processPayment = async (data) => {
   try {
     const response = await API.post('/payments', data);
+    updateLocalMockBookingStatus(data.bookingId, 'confirmed');
     return response.data;
   } catch (err) {
-    // Update local storage mock booking if present
-    try {
-      const existing = JSON.parse(localStorage.getItem('imovies_mock_bookings') || '[]');
-      const updated = existing.map((b) => (b._id === data.bookingId ? { ...b, status: 'confirmed' } : b));
-      localStorage.setItem('imovies_mock_bookings', JSON.stringify(updated));
-    } catch (e) {
-      console.error(e);
-    }
+    updateLocalMockBookingStatus(data.bookingId, 'confirmed');
 
     return {
       success: true,

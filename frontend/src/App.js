@@ -25,6 +25,7 @@ import AdminMoviesPage from './pages/AdminMoviesPage';
 import AdminTheatresPage from './pages/AdminTheatresPage';
 import AdminShowsPage from './pages/AdminShowsPage';
 import AdminBookingsPage from './pages/AdminBookingsPage';
+import AdminUsersPage from './pages/AdminUsersPage';
 
 const darkTheme = createTheme({
   palette: {
@@ -181,6 +182,14 @@ function App() {
               element={
                 <AdminRoute>
                   <AdminBookingsPage />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/users"
+              element={
+                <AdminRoute>
+                  <AdminUsersPage />
                 </AdminRoute>
               }
             />
