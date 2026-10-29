@@ -82,7 +82,7 @@ const DEFAULT_DEMO_BOOKINGS = [
     movie: {
       _id: 'movie_dark_knight_02',
       title: 'The Dark Knight',
-      posterUrl: 'https://image.tmdb.org/t/p/w500/qJ2tW6WMUDux911BTUgMe1nNaD3.jpg',
+      posterUrl: 'https://image.tmdb.org/t/p/w500/qJ2tW6WMUDux911r6m7haRef0WH.jpg',
     },
     theatre: {
       _id: 'theatre_inox_02',

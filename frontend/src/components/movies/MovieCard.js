@@ -19,9 +19,16 @@ import { MOCK_MOVIES } from '../../utils/mockData';
 
 export const getVerifiedPoster = (movie) => {
   if (!movie) return '';
-  const matched = MOCK_MOVIES.find(
-    (m) => m.title?.toLowerCase() === movie.title?.toLowerCase()
-  );
+  const titleNorm = (movie.title || '').trim().toLowerCase();
+  const cleanTitle = titleNorm.replace(/[^a-z0-9]/g, '');
+
+  const matched = MOCK_MOVIES.find((m) => {
+    const mTitle = (m.title || '').trim().toLowerCase();
+    if (mTitle === titleNorm) return true;
+    const cleanM = mTitle.replace(/[^a-z0-9]/g, '');
+    return cleanTitle && cleanM && (cleanTitle === cleanM || cleanTitle.includes(cleanM) || cleanM.includes(cleanTitle));
+  });
+
   if (matched && matched.posterUrl) {
     return matched.posterUrl;
   }
@@ -134,7 +141,8 @@ const MovieCard = ({ movie }) => {
             bottom: 0,
             left: 0,
             right: 0,
-            background: 'linear-gradient(to top, rgba(22, 33, 62, 0.95), transparent)',
+            background: 'linear-gradient(to top, rgba(10, 15, 29, 0.95) 0%, rgba(10, 15, 29, 0.8) 60%, transparent 100%)',
+            backdropFilter: 'blur(3px)',
             p: 1.5,
             pt: 4,
             display: 'flex',

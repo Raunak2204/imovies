@@ -1,13 +1,34 @@
 import API from './api';
 import { MOCK_MOVIES } from '../utils/mockData';
 
+const sanitizeMovie = (movie) => {
+  if (!movie) return movie;
+  const titleNorm = (movie.title || '').trim().toLowerCase();
+  const cleanTitle = titleNorm.replace(/[^a-z0-9]/g, '');
+  const verified = MOCK_MOVIES.find((m) => {
+    const mTitle = (m.title || '').trim().toLowerCase();
+    if (mTitle === titleNorm) return true;
+    const cleanM = mTitle.replace(/[^a-z0-9]/g, '');
+    return cleanTitle && cleanM && (cleanTitle === cleanM || cleanTitle.includes(cleanM) || cleanM.includes(cleanTitle));
+  });
+  if (verified) {
+    return {
+      ...movie,
+      posterUrl: verified.posterUrl || movie.posterUrl,
+      bannerUrl: verified.bannerUrl || movie.bannerUrl,
+      language: (movie.language === 'English' && verified.language !== 'English') ? verified.language : (movie.language || verified.language),
+    };
+  }
+  return movie;
+};
+
 const getStoredMovies = () => {
   try {
     const custom = JSON.parse(localStorage.getItem('imovies_custom_movies') || '[]');
     const map = new Map();
     MOCK_MOVIES.forEach((m) => map.set(m._id, m));
-    custom.forEach((m) => map.set(m._id, m));
-    return Array.from(map.values());
+    custom.forEach((m) => map.set(m._id, sanitizeMovie(m)));
+    return Array.from(map.values()).map(sanitizeMovie);
   } catch {
     return MOCK_MOVIES;
   }
@@ -21,7 +42,10 @@ export const getAllMovies = async (params = {}) => {
   try {
     const response = await API.get('/movies', { params });
     if (response.data && Array.isArray(response.data.data) && response.data.data.length > 0) {
-      return response.data;
+      return {
+        ...response.data,
+        data: response.data.data.map(sanitizeMovie),
+      };
     }
     const all = getStoredMovies();
     return { success: true, count: all.length, data: all };
@@ -38,11 +62,14 @@ export const getAllMovies = async (params = {}) => {
 export const getMovieById = async (id) => {
   try {
     const response = await API.get(`/movies/${id}`);
+    if (response.data && response.data.data) {
+      return { ...response.data, data: sanitizeMovie(response.data.data) };
+    }
     return response.data;
   } catch {
     const all = getStoredMovies();
     const movie = all.find((m) => m._id === id || m.title?.toLowerCase() === id?.toLowerCase()) || all[0];
-    return { success: true, data: movie };
+    return { success: true, data: sanitizeMovie(movie) };
   }
 };
 
@@ -52,7 +79,12 @@ export const getMovieById = async (id) => {
 export const getNowShowing = async () => {
   try {
     const response = await API.get('/movies/now-showing');
-    if (response.data?.data?.length > 0) return response.data;
+    if (response.data?.data?.length > 0) {
+      return {
+        ...response.data,
+        data: response.data.data.map(sanitizeMovie),
+      };
+    }
     const all = getStoredMovies();
     return { success: true, data: all.filter((m) => m.status === 'now_showing') };
   } catch {
@@ -67,7 +99,12 @@ export const getNowShowing = async () => {
 export const getComingSoon = async () => {
   try {
     const response = await API.get('/movies/coming-soon');
-    if (response.data?.data?.length > 0) return response.data;
+    if (response.data?.data?.length > 0) {
+      return {
+        ...response.data,
+        data: response.data.data.map(sanitizeMovie),
+      };
+    }
     const all = getStoredMovies();
     return { success: true, data: all.filter((m) => m.status === 'coming_soon') };
   } catch {

@@ -118,8 +118,8 @@ const moviesData = [
     releaseDate: new Date('2024-02-01'),
     endDate: new Date('2026-12-31'),
     rating: 9.0,
-    posterUrl: 'https://image.tmdb.org/t/p/w500/qJ2tW6WMUDux911BTUgMe1nNaD3.jpg',
-    bannerUrl: 'https://image.tmdb.org/t/p/original/hkBaDkMWbLaf8B1lsWsKX7Ew3Xq.jpg',
+    posterUrl: 'https://image.tmdb.org/t/p/w500/qJ2tW6WMUDux911r6m7haRef0WH.jpg',
+    bannerUrl: 'https://image.tmdb.org/t/p/original/dqK9Hag1054tghRQSqLSfrkvQnA.jpg',
     trailerUrl: 'https://youtube.com/watch?v=EXeTwQWrcwY',
     cast: [
       { name: 'Christian Bale', role: 'Bruce Wayne / Batman', image: '' },
@@ -286,7 +286,7 @@ const moviesData = [
     releaseDate: new Date('2025-03-15'),
     endDate: new Date('2026-12-31'),
     rating: 6.8,
-    posterUrl: 'https://image.tmdb.org/t/p/w500/m1b9ToAbGgT8e7a0D6p6yK30t6A.jpg',
+    posterUrl: 'https://image.tmdb.org/t/p/w500/arf00BkwvXo0CFKbaD9OpqdE4Nu.jpg',
     bannerUrl: 'https://image.tmdb.org/t/p/original/m9m5FjWp7e4Uj7J78YyJ2zY8k1P.jpg',
     trailerUrl: 'https://youtube.com/watch?v=vqu4z34wENw',
     cast: [
@@ -329,12 +329,12 @@ const moviesData = [
     description:
       'A high-octane action thriller outlining the emotional journey of a man who is set to rectify the wrongs in the society while fulfilling a promise made years ago.',
     genre: ['Action', 'Thriller'],
-    language: 'English',
+    language: 'Hindi',
     duration: 169,
     releaseDate: new Date('2024-01-10'),
     endDate: new Date('2026-12-31'),
     rating: 8.4,
-    posterUrl: 'https://image.tmdb.org/t/p/w500/jFt1g94utjjrEgmozLi2EBvR969.jpg',
+    posterUrl: 'https://image.tmdb.org/t/p/w500/lPUrfzWb7icGC6X1z0AKnYRtHGu.jpg',
     bannerUrl: 'https://image.tmdb.org/t/p/original/b9UCfuzwiMUVDEolGQfyua4QZ1I.jpg',
     trailerUrl: 'https://www.youtube.com/watch?v=COv52Qyctws',
     cast: [
@@ -353,12 +353,12 @@ const moviesData = [
     description:
       'A son’s fierce love for his father turns obsessive and toxic, plunging him into a dark journey of violence and bloody vengeance.',
     genre: ['Action', 'Crime', 'Drama'],
-    language: 'English',
+    language: 'Hindi',
     duration: 201,
     releaseDate: new Date('2024-02-15'),
     endDate: new Date('2026-12-31'),
     rating: 8.0,
-    posterUrl: 'https://image.tmdb.org/t/p/w500/hr95v8rlzgWsUN0XkvhCe1A0G2Q.jpg',
+    posterUrl: 'https://image.tmdb.org/t/p/w500/hr9rjR3J0xBBKmlJ4n3gHId9ccx.jpg',
     bannerUrl: 'https://image.tmdb.org/t/p/original/yOm993fn34d4sFq8pP8o6u103zP.jpg',
     trailerUrl: 'https://www.youtube.com/watch?v=Dydmpfo68DA',
     cast: [
@@ -378,12 +378,12 @@ const moviesData = [
     description:
       'The town of Chanderi is being haunted again, this time by a headless entity named Sarkata that abducts modern women, forcing Vicky and his friends to reunite with the mysterious girl.',
     genre: ['Comedy', 'Horror'],
-    language: 'English',
+    language: 'Hindi',
     duration: 147,
     releaseDate: new Date('2024-08-15'),
     endDate: new Date('2026-12-31'),
     rating: 8.2,
-    posterUrl: 'https://image.tmdb.org/t/p/w500/8yK3m5yP8r2m4kQ7k8r7m0yQ6l2.jpg',
+    posterUrl: 'https://image.tmdb.org/t/p/w500/nfnhwfUEFuSOxxf4jDdBlY6Lccw.jpg',
     bannerUrl: 'https://image.tmdb.org/t/p/original/4HodYYKEIsGOdinkGi2Ucz6X9i0.jpg',
     trailerUrl: 'https://www.youtube.com/watch?v=kv1xS995c7o',
     cast: [
@@ -402,12 +402,12 @@ const moviesData = [
     description:
       'Top IAF aviators come together in the face of imminent danger, to form Air Dragons - a specialized quick response team confronting terrorist threats.',
     genre: ['Action', 'War', 'Thriller'],
-    language: 'English',
+    language: 'Hindi',
     duration: 166,
     releaseDate: new Date('2024-01-25'),
     endDate: new Date('2026-12-31'),
     rating: 7.9,
-    posterUrl: 'https://image.tmdb.org/t/p/w500/zDZowWBvGslv71n5nE3b6c2o0uR.jpg',
+    posterUrl: 'https://image.tmdb.org/t/p/w500/zqFuriKJ6pYDvf72kXNLONnuE8k.jpg',
     bannerUrl: 'https://image.tmdb.org/t/p/original/edv5CZvWj09upOsy2Y6IwDhK8bt.jpg',
     trailerUrl: 'https://www.youtube.com/watch?v=6amIq_mP4xM',
     cast: [
@@ -426,12 +426,12 @@ const moviesData = [
     description:
       'Four friends from a village in Punjab share a common dream to go to England. Their problem is that they have neither the visa nor the ticket.',
     genre: ['Comedy', 'Drama'],
-    language: 'English',
+    language: 'Hindi',
     duration: 161,
     releaseDate: new Date('2024-03-20'),
     endDate: new Date('2026-12-31'),
     rating: 7.7,
-    posterUrl: 'https://image.tmdb.org/t/p/w500/4vMhQ1x7Q8n9k3m5yP8r2m4kQ7.jpg',
+    posterUrl: 'https://image.tmdb.org/t/p/w500/8Lee7JPuq7XWUErCoJZqCMhuBMQ.jpg',
     bannerUrl: 'https://image.tmdb.org/t/p/original/xJHokMbljvjADYdit5fK1DVfjko.jpg',
     trailerUrl: 'https://www.youtube.com/watch?v=kYJv9cK7r5k',
     cast: [
@@ -450,12 +450,12 @@ const moviesData = [
     description:
       'Major Kabir Dhaliwal returns for a perilous international mission, facing off against a formidable new rival in the YRF Spy Universe.',
     genre: ['Action', 'Thriller'],
-    language: 'English',
+    language: 'Hindi',
     duration: 160,
     releaseDate: new Date('2025-08-14'),
     endDate: new Date('2026-12-31'),
     rating: 8.5,
-    posterUrl: 'https://image.tmdb.org/t/p/w500/53p4t8W5n1jK7k8r7m0yQ6l2a0.jpg',
+    posterUrl: 'https://image.tmdb.org/t/p/w500/aOSDKvqglKVa3SYy4CPXYUAfDlf.jpg',
     bannerUrl: 'https://image.tmdb.org/t/p/original/8ZTVqvKDQ8emSGUEMjsS4yHAwrp.jpg',
     trailerUrl: 'https://www.youtube.com/watch?v=tQ0mzXRk-oU',
     cast: [
@@ -473,12 +473,12 @@ const moviesData = [
     description:
       'DCP Bajirao Singham leads the Cop Universe heroes on a high-stakes cross-border rescue mission infused with epic mythology.',
     genre: ['Action', 'Drama'],
-    language: 'English',
+    language: 'Hindi',
     duration: 155,
     releaseDate: new Date('2025-11-01'),
     endDate: new Date('2026-12-31'),
     rating: 8.1,
-    posterUrl: 'https://image.tmdb.org/t/p/w500/6yT9Z8X4qW2vK0n3m5yP8r2m4kQ.jpg',
+    posterUrl: 'https://image.tmdb.org/t/p/w500/2JbNkHg8m7LaBy61LyrnnlenaxY.jpg',
     bannerUrl: 'https://image.tmdb.org/t/p/original/hkBaDkMWbLaf8B1lsWsKX7Ew3Xq.jpg',
     trailerUrl: 'https://www.youtube.com/watch?v=3R1tC8r9p3Q',
     cast: [
@@ -497,12 +497,12 @@ const moviesData = [
     description:
       'Rooh Baba ventures into the kingdom of Rakhtghat in West Bengal, where he must confront two vengeful spirits claiming to be Manjulika.',
     genre: ['Comedy', 'Horror'],
-    language: 'English',
+    language: 'Hindi',
     duration: 158,
     releaseDate: new Date('2025-10-31'),
     endDate: new Date('2026-12-31'),
     rating: 8.0,
-    posterUrl: 'https://image.tmdb.org/t/p/w500/8yK3m5yP8r2m4kQ7k8r7m0yQ6l2.jpg',
+    posterUrl: 'https://image.tmdb.org/t/p/w500/3AfHD1HoaQpQwKH8kxRdBKVmzeU.jpg',
     bannerUrl: 'https://image.tmdb.org/t/p/original/fm6K9vYI7vdEN39HaAYqqqGhTeC.jpg',
     trailerUrl: 'https://www.youtube.com/watch?v=8yK3m5yP8r2',
     cast: [
@@ -516,16 +516,16 @@ const moviesData = [
     totalReviews: 980,
   },
   {
-    title: 'Brahmastra Part Two',
+    title: 'Brahmastra Part Two: Dev',
     description:
       'The cosmic Astraverse saga continues, revealing the dark past and unstoppable power of Dev, Shiva’s father and wielder of the Agnyastra.',
     genre: ['Fantasy', 'Action', 'Adventure'],
-    language: 'English',
+    language: 'Hindi',
     duration: 170,
     releaseDate: new Date('2026-12-01'),
     endDate: new Date('2026-12-31'),
     rating: 8.3,
-    posterUrl: 'https://image.tmdb.org/t/p/w500/x7XunwM2k1n2k3m5yP8r2m4kQ7.jpg',
+    posterUrl: 'https://image.tmdb.org/t/p/w500/i1K9Bmq8oO0mkUJRNW7mXIWkzcn.jpg',
     bannerUrl: 'https://image.tmdb.org/t/p/original/8ZTVqvKDQ8emSGUEMjsS4yHAwrp.jpg',
     trailerUrl: 'https://www.youtube.com/watch?v=V5Z8m3r4m5k',
     cast: [
@@ -544,13 +544,13 @@ const moviesData = [
     description:
       'Following the events of Tiger Zinda Hai and War, Tiger and Zoya are framed as traitors by a vengeful ex-ISI terrorist and must go rogue to clear their names.',
     genre: ['Action', 'Thriller'],
-    language: 'English',
+    language: 'Hindi',
     duration: 156,
     releaseDate: new Date('2025-06-15'),
     endDate: new Date('2026-12-31'),
     rating: 7.8,
-    posterUrl: 'https://image.tmdb.org/t/p/w500/7I6VUdPj6tQECNHdviJkUHD2f89.jpg',
-    bannerUrl: 'https://image.tmdb.org/t/p/original/qJ2tW6WMUDux911BTUgMe1nNaD3.jpg',
+    posterUrl: 'https://image.tmdb.org/t/p/w500/7wgED7Yx9VLcNWSO91VgwicHmMD.jpg',
+    bannerUrl: 'https://image.tmdb.org/t/p/original/hkBaDkMWbLaf8B1lsWsKX7Ew3Xq.jpg',
     trailerUrl: 'https://www.youtube.com/watch?v=vMzm3rKmsV0',
     cast: [
       { name: 'Salman Khan', role: 'Avinash Singh Rathore (Tiger)', image: '' },
