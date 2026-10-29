@@ -57,8 +57,65 @@ export const logout = async () => {
   localStorage.removeItem('user');
 };
 
+const DEFAULT_DEMO_USERS = [
+  {
+    _id: 'usr_01',
+    name: 'Rahul Sharma',
+    email: 'rahul@example.com',
+    phone: '+91-9123456780',
+    role: 'user',
+    createdAt: new Date('2024-02-15').toISOString(),
+    bookings: [{ _id: 'bk_01', totalAmount: 700, status: 'confirmed' }],
+  },
+  {
+    _id: 'usr_02',
+    name: 'Priya Patel',
+    email: 'priya@example.com',
+    phone: '+91-9123456781',
+    role: 'user',
+    createdAt: new Date('2024-02-20').toISOString(),
+    bookings: [{ _id: 'bk_02', totalAmount: 1050, status: 'confirmed' }],
+  },
+  {
+    _id: 'usr_03',
+    name: 'Amit Kumar',
+    email: 'amit@example.com',
+    phone: '+91-9123456782',
+    role: 'user',
+    createdAt: new Date('2024-03-01').toISOString(),
+    bookings: [{ _id: 'bk_03', totalAmount: 400, status: 'confirmed' }],
+  },
+  {
+    _id: 'usr_04',
+    name: 'Sneha Reddy',
+    email: 'sneha@example.com',
+    phone: '+91-9123456783',
+    role: 'user',
+    createdAt: new Date('2024-03-10').toISOString(),
+    bookings: [],
+  },
+  {
+    _id: 'usr_05',
+    name: 'Vikram Singh',
+    email: 'vikram@example.com',
+    phone: '+91-9123456784',
+    role: 'user',
+    createdAt: new Date('2024-03-15').toISOString(),
+    bookings: [{ _id: 'bk_04', totalAmount: 1400, status: 'confirmed' }],
+  },
+  {
+    _id: 'adm_01',
+    name: 'Admin User',
+    email: 'admin@imovies.com',
+    phone: '+91-9876543210',
+    role: 'admin',
+    createdAt: new Date('2024-01-01').toISOString(),
+    bookings: [],
+  },
+];
+
 /**
- * Get all users for admin console with fallback
+ * Get all users for admin console with dynamic fallback
  * @param {Object} params
  */
 export const getAllUsers = async (params = {}) => {
@@ -66,67 +123,53 @@ export const getAllUsers = async (params = {}) => {
     const response = await API.get('/auth/users', { params });
     return response.data;
   } catch (err) {
-    // Fallback demo users for graceful offline admin exploration
+    // Dynamic fallback: combine demo users + any newly registered local users
+    const registeredLocal = JSON.parse(localStorage.getItem('imovies_registered_users') || '[]');
+    const storedBookings = JSON.parse(localStorage.getItem('imovies_mock_bookings') || '[]');
+
+    const userMap = new Map();
+    // Base demo users
+    DEFAULT_DEMO_USERS.forEach((u) => userMap.set(u.email, { ...u }));
+
+    // Newly registered local users
+    registeredLocal.forEach((u) => {
+      if (u.email && !userMap.has(u.email)) {
+        userMap.set(u.email, { ...u, bookings: [] });
+      }
+    });
+
+    // Dynamically calculate bookings made by each user from stored bookings
+    storedBookings.forEach((b) => {
+      const userEmail = b.user?.email;
+      if (userEmail && userMap.has(userEmail)) {
+        const u = userMap.get(userEmail);
+        const alreadyHas = Array.isArray(u.bookings) && u.bookings.some((item) => (item._id || item.bookingNumber) === (b._id || b.bookingNumber));
+        if (!alreadyHas) {
+          u.bookings = [b, ...(u.bookings || [])];
+        }
+      }
+    });
+
+    let usersList = Array.from(userMap.values());
+
+    if (params.role) {
+      usersList = usersList.filter((u) => u.role === params.role);
+    }
+    if (params.search) {
+      const q = params.search.toLowerCase();
+      usersList = usersList.filter(
+        (u) =>
+          u.name?.toLowerCase().includes(q) ||
+          u.email?.toLowerCase().includes(q) ||
+          u.phone?.toLowerCase().includes(q)
+      );
+    }
+
     return {
       success: true,
-      count: 6,
-      pagination: { totalResults: 6, total: 6, page: 1, limit: 10 },
-      data: [
-        {
-          _id: 'usr_01',
-          name: 'Rahul Sharma',
-          email: 'rahul@example.com',
-          phone: '+91-9123456780',
-          role: 'user',
-          createdAt: new Date('2024-02-15').toISOString(),
-          bookings: [{ _id: 'bk_01', totalAmount: 700, status: 'confirmed' }],
-        },
-        {
-          _id: 'usr_02',
-          name: 'Priya Patel',
-          email: 'priya@example.com',
-          phone: '+91-9123456781',
-          role: 'user',
-          createdAt: new Date('2024-02-20').toISOString(),
-          bookings: [{ _id: 'bk_02', totalAmount: 1050, status: 'confirmed' }],
-        },
-        {
-          _id: 'usr_03',
-          name: 'Amit Kumar',
-          email: 'amit@example.com',
-          phone: '+91-9123456782',
-          role: 'user',
-          createdAt: new Date('2024-03-01').toISOString(),
-          bookings: [{ _id: 'bk_03', totalAmount: 400, status: 'confirmed' }],
-        },
-        {
-          _id: 'usr_04',
-          name: 'Sneha Reddy',
-          email: 'sneha@example.com',
-          phone: '+91-9123456783',
-          role: 'user',
-          createdAt: new Date('2024-03-10').toISOString(),
-          bookings: [],
-        },
-        {
-          _id: 'usr_05',
-          name: 'Vikram Singh',
-          email: 'vikram@example.com',
-          phone: '+91-9123456784',
-          role: 'user',
-          createdAt: new Date('2024-03-15').toISOString(),
-          bookings: [{ _id: 'bk_04', totalAmount: 1400, status: 'confirmed' }],
-        },
-        {
-          _id: 'adm_01',
-          name: 'Admin User',
-          email: 'admin@imovies.com',
-          phone: '+91-9876543210',
-          role: 'admin',
-          createdAt: new Date('2024-01-01').toISOString(),
-          bookings: [],
-        },
-      ],
+      count: usersList.length,
+      pagination: { totalResults: usersList.length, total: usersList.length, page: 1, limit: 50 },
+      data: usersList,
     };
   }
 };

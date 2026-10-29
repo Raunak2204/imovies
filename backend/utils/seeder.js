@@ -481,6 +481,82 @@ export const seedDatabase = async ({ exitOnFinish = false } = {}) => {
     const shows = await Show.create(showsToCreate);
     console.log(`  ✓ Created ${shows.length} shows`);
 
+    // Create initial demo bookings and payments
+    console.log('Creating initial demo bookings & payments...');
+    const demoBookings = [
+      {
+        user: users[0]._id, // Rahul Sharma
+        show: shows[0]._id,
+        movie: shows[0].movie,
+        theatre: shows[0].theatre,
+        seats: [
+          { seatNumber: 'C4', seatType: 'premium', price: 350 },
+          { seatNumber: 'C5', seatType: 'premium', price: 350 },
+        ],
+        totalAmount: 700,
+        status: 'confirmed',
+      },
+      {
+        user: users[1]._id, // Priya Patel
+        show: shows[1]._id,
+        movie: shows[1].movie,
+        theatre: shows[1].theatre,
+        seats: [
+          { seatNumber: 'A1', seatType: 'vip', price: 500 },
+          { seatNumber: 'A2', seatType: 'vip', price: 500 },
+        ],
+        totalAmount: 1000,
+        status: 'confirmed',
+      },
+      {
+        user: users[2]._id, // Amit Kumar
+        show: shows[2]._id,
+        movie: shows[2].movie,
+        theatre: shows[2].theatre,
+        seats: [
+          { seatNumber: 'G1', seatType: 'regular', price: 200 },
+          { seatNumber: 'G2', seatType: 'regular', price: 200 },
+        ],
+        totalAmount: 400,
+        status: 'confirmed',
+      },
+      {
+        user: users[4]._id, // Vikram Singh
+        show: shows[3]._id,
+        movie: shows[3].movie,
+        theatre: shows[3].theatre,
+        seats: [
+          { seatNumber: 'D8', seatType: 'premium', price: 350 },
+          { seatNumber: 'D9', seatType: 'premium', price: 350 },
+          { seatNumber: 'D10', seatType: 'premium', price: 350 },
+          { seatNumber: 'D11', seatType: 'premium', price: 350 },
+        ],
+        totalAmount: 1400,
+        status: 'confirmed',
+      },
+    ];
+
+    const createdBookings = await Booking.create(demoBookings);
+
+    for (const b of createdBookings) {
+      const p = await Payment.create({
+        booking: b._id,
+        user: b.user,
+        amount: b.totalAmount,
+        method: 'credit_card',
+        transactionId: 'TXN_' + b._id.toString().slice(-8).toUpperCase(),
+        status: 'success',
+        paidAt: new Date(),
+      });
+      b.paymentId = p._id;
+      await b.save();
+
+      await User.findByIdAndUpdate(b.user, {
+        $push: { bookings: b._id },
+      });
+    }
+    console.log(`  ✓ Created ${createdBookings.length} initial confirmed bookings & payments`);
+
     // Summary
     console.log('\n══════════════════════════════════════');
     console.log('  Database seeded successfully!');
@@ -490,6 +566,8 @@ export const seedDatabase = async ({ exitOnFinish = false } = {}) => {
     console.log(`  Movies:         ${movies.length}`);
     console.log(`  Theatres:       ${theatres.length}`);
     console.log(`  Shows:          ${shows.length}`);
+    console.log(`  Bookings:       ${createdBookings.length}`);
+    console.log(`  Initial Profit: ₹3,500`);
     console.log('══════════════════════════════════════');
     console.log('\nAdmin credentials:');
     console.log('  Email: admin@imovies.com / Password: admin123');

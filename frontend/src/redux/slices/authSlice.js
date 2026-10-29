@@ -37,32 +37,49 @@ export const login = createAsyncThunk('auth/login', async (credentials, { reject
 });
 
 export const register = createAsyncThunk('auth/register', async (userData, { rejectWithValue }) => {
+  let user;
+  let token;
   try {
     const data = await authService.register(userData);
-    const token = data.token || data.data?.token || 'mock_jwt_token_' + Date.now();
-    const user = data.user || data.data?.user || data.data || {
+    token = data.token || data.data?.token || 'mock_jwt_token_' + Date.now();
+    user = data.user || data.data?.user || data.data || {
       _id: 'usr_' + Date.now(),
       name: userData.name,
       email: userData.email,
+      phone: userData.phone || '',
       role: 'user',
+      createdAt: new Date().toISOString(),
+      bookings: [],
     };
-
-    localStorage.setItem('token', token);
-    localStorage.setItem('user', JSON.stringify(user));
-    return { token, user };
   } catch (err) {
     // If backend is unreachable, allow successful local registration for demo testing
-    const localUser = {
+    user = {
       _id: 'usr_local_' + Date.now(),
       name: userData.name,
       email: userData.email,
+      phone: userData.phone || '',
       role: 'user',
+      createdAt: new Date().toISOString(),
+      bookings: [],
     };
-    const localToken = 'mock_jwt_token_' + Date.now();
-    localStorage.setItem('token', localToken);
-    localStorage.setItem('user', JSON.stringify(localUser));
-    return { token: localToken, user: localUser };
+    token = 'mock_jwt_token_' + Date.now();
   }
+
+  localStorage.setItem('token', token);
+  localStorage.setItem('user', JSON.stringify(user));
+
+  // Keep registered user directory updated in localStorage
+  try {
+    const directory = JSON.parse(localStorage.getItem('imovies_registered_users') || '[]');
+    if (!directory.some((u) => u.email === user.email)) {
+      directory.unshift(user);
+      localStorage.setItem('imovies_registered_users', JSON.stringify(directory));
+    }
+  } catch (e) {
+    console.error(e);
+  }
+
+  return { token, user };
 });
 
 export const getProfile = createAsyncThunk('auth/getProfile', async (_, { rejectWithValue }) => {
