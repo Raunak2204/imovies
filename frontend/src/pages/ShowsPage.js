@@ -17,6 +17,7 @@ import ShowList from '../components/booking/ShowList';
 import { fetchMovieById } from '../redux/slices/movieSlice';
 import { fetchShowsByMovie } from '../redux/slices/showSlice';
 import { getMockGroupedTheatres, MOCK_MOVIES } from '../utils/mockData';
+import { getLocalDateString } from '../utils/helpers';
 
 const generateDateTabs = () => {
   const dates = [];
@@ -25,7 +26,7 @@ const generateDateTabs = () => {
     const d = new Date(today);
     d.setDate(today.getDate() + i);
     dates.push({
-      dateStr: d.toISOString().split('T')[0],
+      dateStr: getLocalDateString(d),
       dayName: i === 0 ? 'Today' : i === 1 ? 'Tomorrow' : d.toLocaleDateString('en-US', { weekday: 'short' }),
       formatted: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
     });
@@ -61,13 +62,20 @@ const ShowsPage = () => {
 
     // Check if rawShows is already grouped: [{ theatre, shows }]
     if (rawShows[0] && rawShows[0].theatre && Array.isArray(rawShows[0].shows)) {
+      const firstShow = rawShows[0].shows[0];
+      if (firstShow) {
+        const firstShowDate = typeof firstShow.date === 'string' ? firstShow.date.split('T')[0] : getLocalDateString(firstShow.date);
+        if (firstShowDate !== selectedDateStr) {
+          return getMockGroupedTheatres(movieId, selectedDateStr);
+        }
+      }
       return rawShows;
     }
 
     // Otherwise, rawShows is a flat list of Show documents
     const filteredShows = rawShows.filter((s) => {
       if (!s.date) return true;
-      const sDateStr = new Date(s.date).toISOString().split('T')[0];
+      const sDateStr = typeof s.date === 'string' ? s.date.split('T')[0] : getLocalDateString(s.date);
       return sDateStr === selectedDateStr;
     });
 

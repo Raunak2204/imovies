@@ -89,6 +89,20 @@ export const debounce = (fn, delay = 300) => {
 };
 
 /**
+ * Convert a Date object or date-like value into a local 'YYYY-MM-DD' string.
+ * @param {string|Date} dateObj
+ * @returns {string}
+ */
+export const getLocalDateString = (dateObj = new Date()) => {
+  const d = dateObj instanceof Date ? dateObj : new Date(dateObj);
+  if (isNaN(d.getTime())) return '';
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+/**
  * Check if a movie showtime has already passed based on current date & time.
  * For example, if today is 2026-10-30 at 3:00 PM and show is scheduled for 1:00 PM today,
  * this function returns true (show cannot be booked).
@@ -101,19 +115,20 @@ export const isShowPassed = (showDate, startTime) => {
   if (!showDate) return false;
   const now = new Date();
 
-  // Normalize showDate to YYYY-MM-DD
+  // Normalize showDate to local YYYY-MM-DD
   let showDateStr = '';
   if (typeof showDate === 'string') {
-    showDateStr = showDate.split('T')[0];
+    if (showDate.includes('T')) {
+      showDateStr = getLocalDateString(new Date(showDate));
+    } else {
+      showDateStr = showDate.split('T')[0];
+    }
   } else if (showDate instanceof Date && !isNaN(showDate.getTime())) {
-    showDateStr = showDate.toISOString().split('T')[0];
+    showDateStr = getLocalDateString(showDate);
   }
 
   // Local today string YYYY-MM-DD
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-  const todayStr = `${year}-${month}-${day}`;
+  const todayStr = getLocalDateString(now);
 
   if (showDateStr && showDateStr < todayStr) {
     return true; // Past day

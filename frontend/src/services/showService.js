@@ -1,9 +1,10 @@
 import API from './api';
 import { MOCK_MOVIES, MOCK_THEATRES, getMockGroupedTheatres } from '../utils/mockData';
+import { getLocalDateString } from '../utils/helpers';
 
 const generateDefaultShows = () => {
   const allShows = [];
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = getLocalDateString(new Date());
   const activeMovies = MOCK_MOVIES.filter((m) => m.status === 'now_showing').slice(0, 10);
 
   activeMovies.forEach((movie) => {
@@ -52,19 +53,21 @@ export const getAllShows = async (params = {}) => {
 /**
  * Get shows for a specific movie.
  * @param {string} movieId
+ * @param {string} date
  */
-export const getShowsByMovie = async (movieId) => {
+export const getShowsByMovie = async (movieId, date) => {
   try {
-    const response = await API.get(`/shows/movie/${movieId}`);
+    const params = date ? { date } : {};
+    const response = await API.get(`/shows/movie/${movieId}`, { params });
     if (response.data && Array.isArray(response.data.data) && response.data.data.length > 0) {
       return response.data;
     }
-    const todayStr = new Date().toISOString().split('T')[0];
-    const grouped = getMockGroupedTheatres(movieId, todayStr);
+    const targetDate = date || getLocalDateString(new Date());
+    const grouped = getMockGroupedTheatres(movieId, targetDate);
     return { success: true, data: grouped };
   } catch {
-    const todayStr = new Date().toISOString().split('T')[0];
-    const grouped = getMockGroupedTheatres(movieId, todayStr);
+    const targetDate = date || getLocalDateString(new Date());
+    const grouped = getMockGroupedTheatres(movieId, targetDate);
     return { success: true, data: grouped };
   }
 };

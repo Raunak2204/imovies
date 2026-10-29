@@ -3,6 +3,7 @@
  * Ensures that all 4 cinema halls, seat layouts, movie posters, and booking flows
  * work reliably even when offline or if the database is in the process of seeding.
  */
+import { getLocalDateString } from './helpers';
 
 export const MOCK_MOVIES = [
   {
@@ -623,19 +624,20 @@ export const getMockGroupedTheatres = (movieId, dateStr) => {
 
   const showTimes = ['10:00 AM', '01:30 PM', '05:00 PM', '08:30 PM'];
   const movieSlug = (movie.title || 'mv').toLowerCase().replace(/[^a-z0-9]/g, '');
+  const targetDateStr = dateStr || getLocalDateString(new Date());
 
   return MOCK_THEATRES.map((theatre, tIndex) => {
     // Stagger showtimes slightly per theatre
     const theatreShowTimes = showTimes.slice(tIndex % 2, 4);
 
     const shows = theatreShowTimes.map((time, sIndex) => {
-      const showId = `mock_show_${movieSlug}_${movie._id}_${theatre._id}_${dateStr || 'today'}_${sIndex}`;
+      const showId = `mock_show_${movieSlug}_${movie._id}_${theatre._id}_${targetDateStr}_${sIndex}`;
       const showObj = {
         _id: showId,
         movie,
         theatre,
         screenNumber: (sIndex % (theatre.screens.length || 1)) + 1,
-        date: dateStr || new Date().toISOString().split('T')[0],
+        date: targetDateStr,
         startTime: time,
         endTime: calculateMockEndTime(time, movie.duration || 145),
         price: {
@@ -709,12 +711,15 @@ export const getMockShowById = (showId) => {
     }
   }
 
+  const dateMatch = showId?.match(/(\d{4}-\d{2}-\d{2})/);
+  const showDate = dateMatch ? dateMatch[1] : getLocalDateString(new Date());
+
   const generatedShow = {
     _id: showId,
     movie: foundMovie,
     theatre: foundTheatre,
     screenNumber: 1,
-    date: new Date().toISOString().split('T')[0],
+    date: showDate,
     startTime: '05:00 PM',
     endTime: '07:45 PM',
     price: {

@@ -19,6 +19,7 @@ import { toast } from 'react-toastify';
 import BookingCard from '../components/booking/BookingCard';
 import Loading from '../components/common/Loading';
 import { fetchUserBookings, cancelBooking } from '../redux/slices/bookingSlice';
+import { isShowPassed } from '../utils/helpers';
 
 /**
  * Check if the movie show timing has already ended/passed
@@ -27,25 +28,7 @@ export const isBookingExpired = (booking) => {
   if (!booking?.show) return false;
   try {
     const show = booking.show;
-    const dateStr = show.date ? (typeof show.date === 'string' ? show.date.split('T')[0] : new Date(show.date).toISOString().split('T')[0]) : '';
-    if (!dateStr) return false;
-
-    const timeStr = show.endTime || show.startTime || '11:59 PM';
-    const match = timeStr.match(/(\d+):(\d+)\s*(AM|PM)?/i);
-
-    const showDate = new Date(dateStr);
-    if (match) {
-      let hours = parseInt(match[1], 10);
-      const minutes = parseInt(match[2], 10);
-      const ampm = (match[3] || 'PM').toUpperCase();
-      if (ampm === 'PM' && hours < 12) hours += 12;
-      if (ampm === 'AM' && hours === 12) hours = 0;
-      showDate.setHours(hours, minutes, 0, 0);
-    } else {
-      showDate.setHours(23, 59, 59, 999);
-    }
-
-    return showDate.getTime() < Date.now();
+    return isShowPassed(show.date, show.endTime || show.startTime);
   } catch {
     return false;
   }

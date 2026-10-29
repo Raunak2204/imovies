@@ -4,15 +4,19 @@ import { getMockGroupedTheatres, getMockShowById } from '../../utils/mockData';
 
 /* ── Async Thunks ── */
 
-export const fetchShowsByMovie = createAsyncThunk('shows/fetchByMovie', async ({ movieId, date }, { rejectWithValue }) => {
+export const fetchShowsByMovie = createAsyncThunk('shows/fetchByMovie', async (arg, { rejectWithValue }) => {
   try {
-    const data = await showService.getShowsByMovie(movieId);
+    const movieId = typeof arg === 'string' ? arg : arg?.movieId;
+    const date = typeof arg === 'object' ? arg?.date : undefined;
+    const data = await showService.getShowsByMovie(movieId, date);
     const shows = data.data || data.shows || [];
     if (!shows || shows.length === 0) {
       return { data: getMockGroupedTheatres(movieId, date) };
     }
     return data;
   } catch (err) {
+    const movieId = typeof arg === 'string' ? arg : arg?.movieId;
+    const date = typeof arg === 'object' ? arg?.date : undefined;
     return { data: getMockGroupedTheatres(movieId, date) };
   }
 });
