@@ -132,9 +132,12 @@ const ShowsPage = () => {
             <Typography variant="h4" fontWeight={800} color="#fff">
               {movie.title}
             </Typography>
-            <Box sx={{ display: 'flex', gap: 1, mt: 1, flexWrap: 'wrap' }}>
+            <Box sx={{ display: 'flex', gap: 1, mt: 1, flexWrap: 'wrap', alignItems: 'center' }}>
+              {movie.status === 'coming_soon' && (
+                <Chip label="COMING SOON" size="small" sx={{ bgcolor: '#e94560', color: '#fff', fontWeight: 800 }} />
+              )}
               {movie.certificate && (
-                <Chip label={movie.certificate} size="small" sx={{ bgcolor: '#e94560', color: '#fff', fontWeight: 'bold' }} />
+                <Chip label={movie.certificate} size="small" sx={{ bgcolor: '#0f3460', color: '#fff', fontWeight: 'bold' }} />
               )}
               {movie.language && (
                 <Chip label={movie.language} size="small" variant="outlined" />
@@ -148,56 +151,99 @@ const ShowsPage = () => {
 
           <Box sx={{ textAlign: { xs: 'left', sm: 'right' } }}>
             <Typography variant="caption" color="text.secondary">
-              Select date & theatre to reserve seats
+              {movie.status === 'coming_soon' ? 'Advance bookings not open yet' : 'Select date & theatre to reserve seats'}
             </Typography>
           </Box>
         </Paper>
       )}
 
-      {/* Date Tabs */}
-      <Paper
-        sx={{
-          bgcolor: '#16213e',
-          borderRadius: 3,
-          mb: 4,
-          border: '1px solid rgba(255, 255, 255, 0.05)',
-        }}
-      >
-        <Tabs
-          value={selectedDateIndex}
-          onChange={(e, val) => setSelectedDateIndex(val)}
-          variant="scrollable"
-          scrollButtons="auto"
+      {/* If movie is Coming Soon, show informative banner instead of booking flow */}
+      {movie?.status === 'coming_soon' ? (
+        <Paper
+          elevation={3}
           sx={{
-            '& .MuiTabs-indicator': { bgcolor: '#e94560', height: 3 },
-            '& .MuiTab-root': {
-              color: 'text.secondary',
-              py: 2,
-              minWidth: 110,
-              '&.Mui-selected': { color: '#e94560', fontWeight: 'bold' },
-            },
+            p: 6,
+            textAlign: 'center',
+            backgroundColor: '#16213e',
+            borderRadius: 3,
+            border: '1px solid rgba(233, 69, 96, 0.3)',
           }}
         >
-          {dateTabs.map((item) => (
-            <Tab
-              key={item.dateStr}
-              label={
-                <Box sx={{ textAlign: 'center' }}>
-                  <Typography variant="caption" display="block">
-                    {item.dayName}
-                  </Typography>
-                  <Typography variant="subtitle2" fontWeight={700}>
-                    {item.formatted}
-                  </Typography>
-                </Box>
-              }
-            />
-          ))}
-        </Tabs>
-      </Paper>
+          <Chip
+            label="COMING SOON TO CINEMAS"
+            sx={{ bgcolor: 'rgba(233, 69, 96, 0.15)', color: '#ff6b81', fontWeight: 800, mb: 2 }}
+          />
+          <Typography variant="h5" fontWeight={800} color="#fff" mb={1.5}>
+            Advance Booking Not Open Yet
+          </Typography>
+          <Typography variant="body1" color="text.secondary" maxWidth={600} mx="auto" mb={3}>
+            Tickets for <strong>{movie.title}</strong> are not available for booking yet as the movie is scheduled for an upcoming release. Please check back closer to the theatrical release date.
+          </Typography>
+          <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2 }}>
+            <Button
+              variant="contained"
+              onClick={() => navigate('/movies')}
+              sx={{ background: 'linear-gradient(45deg, #e94560, #ff6b81)', fontWeight: 700 }}
+            >
+              Explore Now Showing Movies
+            </Button>
+            <Button
+              variant="outlined"
+              onClick={() => navigate(`/movies/${movie._id}`)}
+              sx={{ borderColor: 'rgba(255,255,255,0.2)', color: '#fff' }}
+            >
+              View Movie Details
+            </Button>
+          </Box>
+        </Paper>
+      ) : (
+        <>
+          {/* Date Tabs */}
+          <Paper
+            sx={{
+              bgcolor: '#16213e',
+              borderRadius: 3,
+              mb: 4,
+              border: '1px solid rgba(255, 255, 255, 0.05)',
+            }}
+          >
+            <Tabs
+              value={selectedDateIndex}
+              onChange={(e, val) => setSelectedDateIndex(val)}
+              variant="scrollable"
+              scrollButtons="auto"
+              sx={{
+                '& .MuiTabs-indicator': { bgcolor: '#e94560', height: 3 },
+                '& .MuiTab-root': {
+                  color: 'text.secondary',
+                  py: 2,
+                  minWidth: 110,
+                  '&.Mui-selected': { color: '#e94560', fontWeight: 'bold' },
+                },
+              }}
+            >
+              {dateTabs.map((item) => (
+                <Tab
+                  key={item.dateStr}
+                  label={
+                    <Box sx={{ textAlign: 'center' }}>
+                      <Typography variant="caption" display="block">
+                        {item.dayName}
+                      </Typography>
+                      <Typography variant="subtitle2" fontWeight={700}>
+                        {item.formatted}
+                      </Typography>
+                    </Box>
+                  }
+                />
+              ))}
+            </Tabs>
+          </Paper>
 
-      {/* Showtimes List for All 4 Cinema Halls */}
-      <ShowList groupedTheatres={groupedTheatres} loading={loading && groupedTheatres.length === 0} />
+          {/* Showtimes List for All 4 Cinema Halls */}
+          <ShowList groupedTheatres={groupedTheatres} loading={loading && groupedTheatres.length === 0} />
+        </>
+      )}
     </Container>
   );
 };

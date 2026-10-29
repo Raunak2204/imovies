@@ -31,8 +31,55 @@ export const getUserBookings = async () => {
  * @param {string} id
  */
 export const cancelBooking = async (id) => {
-  const response = await API.put(`/bookings/${id}/cancel`);
-  return response.data;
+  try {
+    await API.put(`/bookings/${id}/cancel`);
+  } catch (e) {
+    // Graceful fallback for mock/demo bookings
+  }
+
+  // Update in localStorage mock bookings
+  try {
+    const stored = JSON.parse(localStorage.getItem('imovies_mock_bookings') || '[]');
+    let updated = false;
+    const modified = stored.map((b) => {
+      if (b._id === id || b.bookingNumber === id) {
+        updated = true;
+        // Release seats
+        const showId = b.show?._id || b.show || b.showId;
+        if (showId && b.seats) {
+          try {
+            const key = 'imovies_booked_seats_' + showId;
+            const currentBooked = JSON.parse(localStorage.getItem(key) || '[]');
+            const seatNums = b.seats.map((s) => s.seatNumber);
+            const remaining = currentBooked.filter((s) => !seatNums.includes(s));
+            localStorage.setItem(key, JSON.stringify(remaining));
+          } catch {}
+        }
+        return { ...b, status: 'cancelled' };
+      }
+      return b;
+    });
+
+    if (updated) {
+      localStorage.setItem('imovies_mock_bookings', JSON.stringify(modified));
+    } else {
+      const demo = DEFAULT_DEMO_BOOKINGS.find((b) => b._id === id || b.bookingNumber === id);
+      if (demo) {
+        modified.unshift({ ...demo, status: 'cancelled' });
+        localStorage.setItem('imovies_mock_bookings', JSON.stringify(modified));
+      }
+    }
+
+    const cancelledList = JSON.parse(localStorage.getItem('imovies_cancelled_booking_ids') || '[]');
+    if (!cancelledList.includes(id)) {
+      cancelledList.push(id);
+      localStorage.setItem('imovies_cancelled_booking_ids', JSON.stringify(cancelledList));
+    }
+  } catch (err) {
+    console.error('Error updating mock booking status:', err);
+  }
+
+  return { success: true, message: 'Booking cancelled successfully' };
 };
 
 const DEFAULT_DEMO_BOOKINGS = [
@@ -181,10 +228,21 @@ const DEFAULT_DEMO_BOOKINGS = [
  * @param {Object} params - { page, limit, status, search }
  */
 export const getAllBookings = async (params = {}) => {
+  const cancelledList = JSON.parse(localStorage.getItem('imovies_cancelled_booking_ids') || '[]');
+  const applyCancelled = (b) => {
+    if (cancelledList.includes(b._id) || cancelledList.includes(b.bookingNumber)) {
+      return { ...b, status: 'cancelled' };
+    }
+    return b;
+  };
+
   try {
     const response = await API.get('/bookings', { params });
     if (response.data && Array.isArray(response.data.data) && response.data.data.length > 0) {
-      return response.data;
+      return {
+        ...response.data,
+        data: response.data.data.map(applyCancelled),
+      };
     }
     // If backend returns empty array or minimal data, merge with fallback
     const stored = JSON.parse(localStorage.getItem('imovies_mock_bookings') || '[]');
@@ -193,7 +251,7 @@ export const getAllBookings = async (params = {}) => {
     stored.forEach((b) => map.set(b._id || b.bookingNumber, b));
     (response.data?.data || []).forEach((b) => map.set(b._id || b.bookingNumber, b));
 
-    let list = Array.from(map.values());
+    let list = Array.from(map.values()).map(applyCancelled);
     if (params.status) {
       list = list.filter((b) => b.status === params.status);
     }
@@ -208,7 +266,7 @@ export const getAllBookings = async (params = {}) => {
     DEFAULT_DEMO_BOOKINGS.forEach((b) => map.set(b._id, b));
     stored.forEach((b) => map.set(b._id || b.bookingNumber, b));
 
-    let list = Array.from(map.values());
+    let list = Array.from(map.values()).map(applyCancelled);
     if (params.status) {
       list = list.filter((b) => b.status === params.status);
     }

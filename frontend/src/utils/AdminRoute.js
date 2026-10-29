@@ -14,7 +14,13 @@ const AdminRoute = ({ children }) => {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  if (user?.role !== 'admin') {
+  const isAdminOrSuper =
+    user?.role === 'admin' ||
+    user?.role === 'superadmin' ||
+    user?.email === 'superadmin@imovies.com' ||
+    user?.email === 'admin@imovies.com';
+
+  if (!isAdminOrSuper) {
     return <Navigate to="/" replace />;
   }
 

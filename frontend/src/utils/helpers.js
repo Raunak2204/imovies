@@ -87,3 +87,56 @@ export const debounce = (fn, delay = 300) => {
     timer = setTimeout(() => fn(...args), delay);
   };
 };
+
+/**
+ * Check if a movie showtime has already passed based on current date & time.
+ * For example, if today is 2026-10-30 at 3:00 PM and show is scheduled for 1:00 PM today,
+ * this function returns true (show cannot be booked).
+ *
+ * @param {string|Date} showDate - Date of show (e.g. '2026-10-30' or Date object)
+ * @param {string} startTime - Start time string (e.g. '01:00 PM', '10:00 AM', '15:30')
+ * @returns {boolean} true if show has already concluded/started
+ */
+export const isShowPassed = (showDate, startTime) => {
+  if (!showDate) return false;
+  const now = new Date();
+
+  // Normalize showDate to YYYY-MM-DD
+  let showDateStr = '';
+  if (typeof showDate === 'string') {
+    showDateStr = showDate.split('T')[0];
+  } else if (showDate instanceof Date && !isNaN(showDate.getTime())) {
+    showDateStr = showDate.toISOString().split('T')[0];
+  }
+
+  // Local today string YYYY-MM-DD
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const todayStr = `${year}-${month}-${day}`;
+
+  if (showDateStr && showDateStr < todayStr) {
+    return true; // Past day
+  }
+
+  if (showDateStr && showDateStr > todayStr) {
+    return false; // Future day
+  }
+
+  // Same day: evaluate start time
+  if (!startTime) return false;
+  const match = startTime.match(/(\d+):(\d+)\s*(AM|PM)?/i);
+  if (!match) return false;
+
+  let hours = parseInt(match[1], 10);
+  const minutes = parseInt(match[2], 10);
+  const meridiem = match[3]?.toUpperCase();
+
+  if (meridiem === 'PM' && hours !== 12) hours += 12;
+  if (meridiem === 'AM' && hours === 12) hours = 0;
+
+  const showTime = new Date(now);
+  showTime.setHours(hours, minutes, 0, 0);
+
+  return now >= showTime;
+};

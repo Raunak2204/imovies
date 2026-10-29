@@ -183,22 +183,59 @@ const MovieDetail = ({ movie }) => {
 
             {/* Action CTAs */}
             <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mt: 2 }}>
-              <Button
-                variant="contained"
-                size="large"
-                startIcon={<ConfirmationNumberIcon />}
-                onClick={() => navigate(`/shows/${movie._id}`)}
-                sx={{
-                  px: 4,
-                  py: 1.4,
-                  fontSize: '1.05rem',
-                  fontWeight: 700,
-                  background: 'linear-gradient(45deg, #e94560, #ff6b81)',
-                  boxShadow: '0 6px 20px rgba(233, 69, 96, 0.4)',
-                }}
-              >
-                Book Tickets Now
-              </Button>
+              {movie.status === 'coming_soon' ? (
+                <Button
+                  variant="outlined"
+                  size="large"
+                  disabled
+                  sx={{
+                    px: 3.5,
+                    py: 1.4,
+                    fontSize: '1rem',
+                    fontWeight: 700,
+                    borderColor: 'rgba(233, 69, 96, 0.4) !important',
+                    color: '#ff6b81 !important',
+                    bgcolor: 'rgba(233, 69, 96, 0.08) !important',
+                    borderRadius: 2,
+                  }}
+                >
+                  Coming Soon • Bookings Not Open Yet
+                </Button>
+              ) : movie.status === 'ended' ? (
+                <Button
+                  variant="outlined"
+                  size="large"
+                  disabled
+                  sx={{
+                    px: 3.5,
+                    py: 1.4,
+                    fontSize: '1rem',
+                    fontWeight: 700,
+                    borderColor: 'rgba(255, 255, 255, 0.2) !important',
+                    color: '#888 !important',
+                    borderRadius: 2,
+                  }}
+                >
+                  Theatrical Run Ended
+                </Button>
+              ) : (
+                <Button
+                  variant="contained"
+                  size="large"
+                  startIcon={<ConfirmationNumberIcon />}
+                  onClick={() => navigate(`/shows/${movie._id}`)}
+                  sx={{
+                    px: 4,
+                    py: 1.4,
+                    fontSize: '1.05rem',
+                    fontWeight: 700,
+                    background: 'linear-gradient(45deg, #e94560, #ff6b81)',
+                    boxShadow: '0 6px 20px rgba(233, 69, 96, 0.4)',
+                  }}
+                >
+                  Book Tickets Now
+                </Button>
+              )}
               {movie.trailerUrl && (
                 <Button
                   variant="outlined"

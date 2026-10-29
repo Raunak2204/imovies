@@ -43,6 +43,10 @@ const MovieCard = ({ movie }) => {
 
   const handleBookNow = (e) => {
     e.stopPropagation();
+    if (movie.status === 'coming_soon') {
+      navigate(`/movies/${movie._id}`);
+      return;
+    }
     navigate(`/shows/${movie._id}`);
   };
 
@@ -134,6 +138,25 @@ const MovieCard = ({ movie }) => {
           />
         )}
 
+        {/* Coming Soon Status Badge */}
+        {movie.status === 'coming_soon' && (
+          <Chip
+            label="COMING SOON"
+            size="small"
+            sx={{
+              position: 'absolute',
+              top: 10,
+              right: 10,
+              backgroundColor: '#e94560',
+              color: '#fff',
+              fontWeight: 800,
+              fontSize: '0.65rem',
+              letterSpacing: 0.5,
+              boxShadow: '0 2px 10px rgba(233,69,96,0.5)',
+            }}
+          />
+        )}
+
         {/* Rating Overlay */}
         <Box
           sx={{
@@ -216,20 +239,60 @@ const MovieCard = ({ movie }) => {
 
       {/* Card Action */}
       <CardActions sx={{ p: 2, pt: 0 }}>
-        <Button
-          variant="contained"
-          fullWidth
-          size="small"
-          startIcon={<ConfirmationNumberIcon />}
-          onClick={handleBookNow}
-          sx={{
-            background: 'linear-gradient(45deg, #e94560, #ff6b81)',
-            fontWeight: 700,
-            py: 0.9,
-          }}
-        >
-          Book Tickets
-        </Button>
+        {movie.status === 'coming_soon' ? (
+          <Button
+            variant="outlined"
+            fullWidth
+            size="small"
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(`/movies/${movie._id}`);
+            }}
+            sx={{
+              borderColor: 'rgba(233, 69, 96, 0.5)',
+              color: '#ff6b81',
+              fontWeight: 700,
+              py: 0.9,
+              bgcolor: 'rgba(233, 69, 96, 0.08)',
+              '&:hover': {
+                borderColor: '#e94560',
+                bgcolor: 'rgba(233, 69, 96, 0.16)',
+              },
+            }}
+          >
+            Coming Soon • Details
+          </Button>
+        ) : movie.status === 'ended' ? (
+          <Button
+            variant="outlined"
+            fullWidth
+            size="small"
+            disabled
+            sx={{
+              borderColor: 'rgba(255, 255, 255, 0.15)',
+              color: '#888 !important',
+              fontWeight: 700,
+              py: 0.9,
+            }}
+          >
+            Run Ended
+          </Button>
+        ) : (
+          <Button
+            variant="contained"
+            fullWidth
+            size="small"
+            startIcon={<ConfirmationNumberIcon />}
+            onClick={handleBookNow}
+            sx={{
+              background: 'linear-gradient(45deg, #e94560, #ff6b81)',
+              fontWeight: 700,
+              py: 0.9,
+            }}
+          >
+            Book Tickets
+          </Button>
+        )}
       </CardActions>
     </Card>
   );

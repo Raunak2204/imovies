@@ -20,6 +20,7 @@ import Loading from '../components/common/Loading';
 import { fetchShowById, fetchAvailableSeats } from '../redux/slices/showSlice';
 import { createBooking } from '../redux/slices/bookingSlice';
 import { getMockShowById, generateMockSeatMap } from '../utils/mockData';
+import { isShowPassed } from '../utils/helpers';
 
 const SeatSelectionPage = () => {
   const { showId } = useParams();
@@ -131,6 +132,16 @@ const SeatSelectionPage = () => {
   };
 
   const handleProceedToPayment = async () => {
+    if (currentShow?.movie?.status === 'coming_soon') {
+      toast.error('Bookings for Coming Soon movies are not permitted');
+      return;
+    }
+
+    if (isShowPassed(currentShow?.date, currentShow?.startTime)) {
+      toast.error('This show has already started or ended. You cannot book past showtimes.');
+      return;
+    }
+
     if (selectedSeats.length === 0) {
       toast.info('Please select at least one seat to proceed');
       return;
@@ -225,6 +236,18 @@ const SeatSelectionPage = () => {
           </Typography>
         </Box>
       </Paper>
+
+      {/* Alert if show has passed or movie is coming soon */}
+      {isShowPassed(currentShow?.date, currentShow?.startTime) && (
+        <Alert severity="error" sx={{ mb: 3 }}>
+          This showtime ({currentShow?.startTime}) has already concluded or started. You cannot book tickets for past showtimes.
+        </Alert>
+      )}
+      {currentShow?.movie?.status === 'coming_soon' && (
+        <Alert severity="warning" sx={{ mb: 3 }}>
+          This film is Coming Soon. Advance ticket booking is not open yet.
+        </Alert>
+      )}
 
       {/* Seat Selection & Summary Grid */}
       <Grid container spacing={4}>

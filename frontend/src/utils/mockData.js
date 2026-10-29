@@ -616,6 +616,11 @@ export const getMockGroupedTheatres = (movieId, dateStr) => {
   }
   if (!movie) movie = MOCK_MOVIES[0];
 
+  // Strictly block shows for Coming Soon movies
+  if (movie.status === 'coming_soon') {
+    return [];
+  }
+
   const showTimes = ['10:00 AM', '01:30 PM', '05:00 PM', '08:30 PM'];
   const movieSlug = (movie.title || 'mv').toLowerCase().replace(/[^a-z0-9]/g, '');
 

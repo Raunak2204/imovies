@@ -13,6 +13,8 @@ import LocationOnIcon from '@mui/icons-material/LocationOn';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import MovieFilterIcon from '@mui/icons-material/MovieFilter';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
+import BlockIcon from '@mui/icons-material/Block';
+import { isShowPassed } from '../../utils/helpers';
 
 const ShowList = ({ groupedTheatres = [], loading = false }) => {
   const navigate = useNavigate();
@@ -131,74 +133,107 @@ const ShowList = ({ groupedTheatres = [], loading = false }) => {
                 {shows.map((show) => {
                   const regularPrice = show.price?.regular || (typeof show.price === 'number' ? show.price : 200);
                   const availableCount = show.availableSeats != null ? show.availableSeats : 120;
+                  const isPassed = isShowPassed(show.date, show.startTime);
 
                   return (
                     <Grid item xs={12} sm={6} md={4} lg={3} key={show._id}>
                       <Box
-                        onClick={() => navigate(`/booking/${show._id}`)}
+                        onClick={() => {
+                          if (!isPassed) {
+                            navigate(`/booking/${show._id}`);
+                          }
+                        }}
                         sx={{
                           p: 2,
                           borderRadius: 2.5,
-                          border: '1px solid rgba(233, 69, 96, 0.25)',
-                          backgroundColor: 'rgba(255, 255, 255, 0.02)',
-                          cursor: 'pointer',
+                          border: isPassed ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(233, 69, 96, 0.25)',
+                          backgroundColor: isPassed ? 'rgba(255, 255, 255, 0.01)' : 'rgba(255, 255, 255, 0.02)',
+                          opacity: isPassed ? 0.45 : 1,
+                          cursor: isPassed ? 'not-allowed' : 'pointer',
                           transition: 'all 0.2s ease',
-                          '&:hover': {
-                            borderColor: '#e94560',
-                            backgroundColor: 'rgba(233, 69, 96, 0.08)',
-                            transform: 'translateY(-3px)',
-                            boxShadow: '0 6px 20px rgba(233, 69, 96, 0.25)',
-                          },
+                          ...(!isPassed && {
+                            '&:hover': {
+                              borderColor: '#e94560',
+                              backgroundColor: 'rgba(233, 69, 96, 0.08)',
+                              transform: 'translateY(-3px)',
+                              boxShadow: '0 6px 20px rgba(233, 69, 96, 0.25)',
+                            },
+                          }),
                         }}
                       >
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                          <Typography variant="h6" fontWeight={800} color="#e94560">
+                          <Typography variant="h6" fontWeight={800} color={isPassed ? '#888' : '#e94560'}>
                             {show.startTime}
                           </Typography>
                           <Chip
-                            label={`Screen ${show.screenNumber || 1}`}
+                            label={isPassed ? 'Ended / Passed' : `Screen ${show.screenNumber || 1}`}
                             size="small"
-                            sx={{ bgcolor: '#0f3460', color: '#fff', fontSize: '0.7rem', fontWeight: 600 }}
+                            sx={{
+                              bgcolor: isPassed ? 'rgba(255,255,255,0.1)' : '#0f3460',
+                              color: isPassed ? '#bbb' : '#fff',
+                              fontSize: '0.7rem',
+                              fontWeight: 600,
+                            }}
                           />
                         </Box>
 
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8, mb: 1.5, color: 'text.secondary' }}>
                           <AccessTimeIcon sx={{ fontSize: 14 }} />
-                          <Typography variant="caption">Ends around {show.endTime || 'Show finish'}</Typography>
+                          <Typography variant="caption">
+                            {isPassed ? 'Showtime already passed' : `Ends around ${show.endTime || 'Show finish'}`}
+                          </Typography>
                         </Box>
 
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
                           <Typography variant="caption" color="text.secondary">
-                            From <strong style={{ color: '#fff' }}>₹{regularPrice}</strong>
+                            From <strong style={{ color: isPassed ? '#888' : '#fff' }}>₹{regularPrice}</strong>
                           </Typography>
                           <Typography
                             variant="caption"
                             sx={{
-                              color: availableCount > 20 ? '#4caf50' : '#ff9800',
+                              color: isPassed ? '#888' : availableCount > 20 ? '#4caf50' : '#ff9800',
                               fontWeight: 700,
                             }}
                           >
-                            {availableCount} seats left
+                            {isPassed ? 'Unavailable' : `${availableCount} seats left`}
                           </Typography>
                         </Box>
 
-                        <Button
-                          variant="contained"
-                          fullWidth
-                          size="small"
-                          startIcon={<ConfirmationNumberIcon sx={{ fontSize: 16 }} />}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            navigate(`/booking/${show._id}`);
-                          }}
-                          sx={{
-                            background: 'linear-gradient(45deg, #e94560, #ff6b81)',
-                            fontWeight: 700,
-                            borderRadius: 1.5,
-                          }}
-                        >
-                          Select Seats
-                        </Button>
+                        {isPassed ? (
+                          <Button
+                            variant="outlined"
+                            fullWidth
+                            size="small"
+                            disabled
+                            startIcon={<BlockIcon sx={{ fontSize: 16 }} />}
+                            sx={{
+                              borderColor: 'rgba(255, 255, 255, 0.15)',
+                              color: '#777 !important',
+                              fontWeight: 600,
+                              borderRadius: 1.5,
+                            }}
+                          >
+                            Show Concluded
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="contained"
+                            fullWidth
+                            size="small"
+                            startIcon={<ConfirmationNumberIcon sx={{ fontSize: 16 }} />}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/booking/${show._id}`);
+                            }}
+                            sx={{
+                              background: 'linear-gradient(45deg, #e94560, #ff6b81)',
+                              fontWeight: 700,
+                              borderRadius: 1.5,
+                            }}
+                          >
+                            Select Seats
+                          </Button>
+                        )}
                       </Box>
                     </Grid>
                   );

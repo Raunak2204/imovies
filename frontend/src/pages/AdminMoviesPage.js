@@ -11,6 +11,8 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
+  Tabs,
+  Tab,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
@@ -33,6 +35,7 @@ const AdminMoviesPage = () => {
   // Delete dialog state
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [movieToDelete, setMovieToDelete] = useState(null);
+  const [selectedStatusTab, setSelectedStatusTab] = useState('all');
 
   const fetchMoviesList = async () => {
     try {
@@ -49,6 +52,22 @@ const AdminMoviesPage = () => {
   useEffect(() => {
     fetchMoviesList();
   }, []);
+
+  const handleToggleStatus = async (movie, newStatus) => {
+    try {
+      await movieService.updateMovie(movie._id, { ...movie, status: newStatus });
+      toast.success(
+        newStatus === 'now_showing'
+          ? `"${movie.title}" is now published as Now Showing!`
+          : newStatus === 'ended'
+          ? `"${movie.title}" theatrical run marked as Ended`
+          : `"${movie.title}" marked as Coming Soon`
+      );
+      fetchMoviesList();
+    } catch (err) {
+      toast.error('Failed to update movie status');
+    }
+  };
 
   const handleCreateOrUpdate = async (formData) => {
     try {
@@ -136,14 +155,49 @@ const AdminMoviesPage = () => {
     },
     {
       id: 'status',
-      label: 'Status',
+      label: 'Status & Controls',
       render: (row) => (
-        <Chip
-          label={row.status === 'now_showing' ? 'Now Showing' : row.status === 'coming_soon' ? 'Coming Soon' : 'Ended'}
-          color={row.status === 'now_showing' ? 'success' : row.status === 'coming_soon' ? 'warning' : 'default'}
-          size="small"
-          sx={{ fontSize: '0.7rem', fontWeight: 600 }}
-        />
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.8, alignItems: 'flex-start' }}>
+          <Chip
+            label={row.status === 'now_showing' ? 'Now Showing' : row.status === 'coming_soon' ? 'Coming Soon' : 'Ended'}
+            color={row.status === 'now_showing' ? 'success' : row.status === 'coming_soon' ? 'warning' : 'default'}
+            size="small"
+            sx={{ fontSize: '0.7rem', fontWeight: 700 }}
+          />
+          {row.status === 'coming_soon' && (
+            <Button
+              size="small"
+              variant="outlined"
+              color="success"
+              onClick={() => handleToggleStatus(row, 'now_showing')}
+              sx={{ py: 0.2, px: 1, fontSize: '0.68rem', fontWeight: 700, borderColor: '#4caf50' }}
+            >
+              Publish (Now Showing)
+            </Button>
+          )}
+          {row.status === 'now_showing' && (
+            <Button
+              size="small"
+              variant="outlined"
+              color="warning"
+              onClick={() => handleToggleStatus(row, 'ended')}
+              sx={{ py: 0.2, px: 1, fontSize: '0.68rem', fontWeight: 700, borderColor: '#ff9800' }}
+            >
+              End Run
+            </Button>
+          )}
+          {row.status === 'ended' && (
+            <Button
+              size="small"
+              variant="outlined"
+              color="info"
+              onClick={() => handleToggleStatus(row, 'now_showing')}
+              sx={{ py: 0.2, px: 1, fontSize: '0.68rem', fontWeight: 700, borderColor: '#2196f3' }}
+            >
+              Re-Publish
+            </Button>
+          )}
+        </Box>
       ),
     },
     {
@@ -177,6 +231,16 @@ const AdminMoviesPage = () => {
     },
   ];
 
+  const allCount = movies.length;
+  const nowCount = movies.filter((m) => m.status === 'now_showing').length;
+  const soonCount = movies.filter((m) => m.status === 'coming_soon').length;
+  const endedCount = movies.filter((m) => m.status === 'ended').length;
+
+  const filteredMovies =
+    selectedStatusTab === 'all'
+      ? movies
+      : movies.filter((m) => m.status === selectedStatusTab);
+
   return (
     <AdminLayout
       title="Movie Management"
@@ -195,9 +259,34 @@ const AdminMoviesPage = () => {
         </Button>
       }
     >
+      <Box sx={{ mb: 2.5, borderBottom: 1, borderColor: 'rgba(255, 255, 255, 0.1)' }}>
+        <Tabs
+          value={selectedStatusTab}
+          onChange={(e, val) => setSelectedStatusTab(val)}
+          textColor="inherit"
+          indicatorColor="secondary"
+          sx={{
+            '& .MuiTabs-indicator': { backgroundColor: '#e94560', height: 3 },
+            '& .MuiTab-root': {
+              color: 'rgba(255, 255, 255, 0.6)',
+              fontWeight: 600,
+              fontSize: '0.88rem',
+              textTransform: 'none',
+              minWidth: 100,
+              '&.Mui-selected': { color: '#fff', fontWeight: 700 },
+            },
+          }}
+        >
+          <Tab label={`All Movies (${allCount})`} value="all" />
+          <Tab label={`Now Showing (${nowCount})`} value="now_showing" />
+          <Tab label={`Coming Soon (${soonCount})`} value="coming_soon" />
+          <Tab label={`Ended Run (${endedCount})`} value="ended" />
+        </Tabs>
+      </Box>
+
       <DataTable
         columns={columns}
-        rows={movies}
+        rows={filteredMovies}
         loading={loading}
         searchPlaceholder="Search movies by title..."
         searchField="title"

@@ -68,6 +68,17 @@ const Navbar = () => {
     }
   };
 
+  const isAdminOrSuper =
+    user?.role === 'admin' ||
+    user?.role === 'superadmin' ||
+    user?.email === 'superadmin@imovies.com' ||
+    user?.email === 'admin@imovies.com';
+
+  const isSuperAdmin =
+    user?.role === 'superadmin' || user?.email === 'superadmin@imovies.com';
+  const adminLabel = isSuperAdmin ? 'Super Admin' : 'Admin';
+  const adminDashboardLabel = isSuperAdmin ? 'Super Admin Dashboard' : 'Admin Dashboard';
+
   const navLinks = [
     { label: 'Home', path: '/', icon: <HomeIcon /> },
     { label: 'Movies', path: '/movies', icon: <MovieIcon /> },
@@ -121,13 +132,16 @@ const Navbar = () => {
               <ListItemText primary="My Bookings" />
             </ListItemButton>
           </ListItem>
-          {user?.role === 'admin' && (
+          {isAdminOrSuper && (
             <ListItem disablePadding>
               <ListItemButton component={Link} to="/admin/dashboard" onClick={() => setDrawerOpen(false)}>
-                <ListItemIcon sx={{ color: '#e94560', minWidth: 40 }}>
+                <ListItemIcon sx={{ color: '#ffd700', minWidth: 40 }}>
                   <DashboardIcon />
                 </ListItemIcon>
-                <ListItemText primary="Admin Dashboard" />
+                <ListItemText
+                  primary={adminDashboardLabel}
+                  primaryTypographyProps={{ sx: { color: '#ffd700', fontWeight: 700 } }}
+                />
               </ListItemButton>
             </ListItem>
           )}
@@ -267,14 +281,29 @@ const Navbar = () => {
             )}
             {isAuthenticated ? (
               <>
-                {!isMobile && user?.role === 'admin' && (
+                {!isMobile && isAdminOrSuper && (
                   <Button
                     component={Link}
                     to="/admin/dashboard"
+                    variant="outlined"
                     size="small"
-                    sx={{ color: '#ffd700', fontSize: 12 }}
+                    startIcon={<DashboardIcon sx={{ color: '#ffd700' }} />}
+                    sx={{
+                      color: '#ffd700',
+                      borderColor: 'rgba(255, 215, 0, 0.5)',
+                      fontWeight: 700,
+                      fontSize: 13,
+                      px: 1.5,
+                      mr: 1,
+                      bgcolor: 'rgba(255, 215, 0, 0.08)',
+                      '&:hover': {
+                        borderColor: '#ffd700',
+                        bgcolor: 'rgba(255, 215, 0, 0.18)',
+                        color: '#fff',
+                      },
+                    }}
                   >
-                    Admin
+                    {adminLabel}
                   </Button>
                 )}
                 <IconButton onClick={handleMenuOpen} sx={{ p: 0.5 }}>
@@ -306,7 +335,7 @@ const Navbar = () => {
                       bgcolor: '#16213e',
                       border: '1px solid rgba(255,255,255,0.08)',
                       mt: 1,
-                      minWidth: 180,
+                      minWidth: 200,
                     },
                   }}
                   transformOrigin={{ horizontal: 'right', vertical: 'top' }}
@@ -321,6 +350,23 @@ const Navbar = () => {
                     </Typography>
                   </Box>
                   <Divider sx={{ borderColor: 'rgba(255,255,255,0.08)' }} />
+                  {isAdminOrSuper && (
+                    <MenuItem
+                      onClick={() => {
+                        navigate('/admin/dashboard');
+                        handleMenuClose();
+                      }}
+                      sx={{
+                        bgcolor: 'rgba(255, 215, 0, 0.06)',
+                        '&:hover': { bgcolor: 'rgba(255, 215, 0, 0.16)' },
+                      }}
+                    >
+                      <DashboardIcon sx={{ mr: 1, fontSize: 20, color: '#ffd700' }} />
+                      <Typography variant="body2" sx={{ fontWeight: 700, color: '#ffd700' }}>
+                        {adminDashboardLabel}
+                      </Typography>
+                    </MenuItem>
+                  )}
                   <MenuItem
                     onClick={() => {
                       navigate('/profile');

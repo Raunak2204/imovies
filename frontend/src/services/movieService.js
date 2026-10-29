@@ -25,10 +25,18 @@ const sanitizeMovie = (movie) => {
 const getStoredMovies = () => {
   try {
     const custom = JSON.parse(localStorage.getItem('imovies_custom_movies') || '[]');
+    const statusOverrides = JSON.parse(localStorage.getItem('imovies_movie_status_overrides') || '{}');
     const map = new Map();
     MOCK_MOVIES.forEach((m) => map.set(m._id, m));
     custom.forEach((m) => map.set(m._id, sanitizeMovie(m)));
-    return Array.from(map.values()).map(sanitizeMovie);
+
+    return Array.from(map.values()).map((m) => {
+      const sanitized = sanitizeMovie(m);
+      if (statusOverrides[sanitized._id] || (sanitized.title && statusOverrides[sanitized.title.toLowerCase()])) {
+        sanitized.status = statusOverrides[sanitized._id] || statusOverrides[sanitized.title.toLowerCase()];
+      }
+      return sanitized;
+    });
   } catch {
     return MOCK_MOVIES;
   }
@@ -39,18 +47,45 @@ const getStoredMovies = () => {
  * @param {Object} params - { page, limit, genre, language, search, sortBy }
  */
 export const getAllMovies = async (params = {}) => {
+  const statusOverrides = JSON.parse(localStorage.getItem('imovies_movie_status_overrides') || '{}');
+  const applyOverrides = (movie) => {
+    const sanitized = sanitizeMovie(movie);
+    if (statusOverrides[sanitized._id] || (sanitized.title && statusOverrides[sanitized.title.toLowerCase()])) {
+      sanitized.status = statusOverrides[sanitized._id] || statusOverrides[sanitized.title.toLowerCase()];
+    }
+    return sanitized;
+  };
+
   try {
     const response = await API.get('/movies', { params });
     if (response.data && Array.isArray(response.data.data) && response.data.data.length > 0) {
+      // Merge with MOCK_MOVIES so all catalog titles (including Coming Soon) are guaranteed to appear
+      const map = new Map();
+      MOCK_MOVIES.forEach((m) => map.set(m.title.toLowerCase(), m));
+      response.data.data.forEach((m) => map.set(m.title.toLowerCase(), m));
+      const custom = JSON.parse(localStorage.getItem('imovies_custom_movies') || '[]');
+      custom.forEach((m) => map.set(m.title?.toLowerCase() || m._id, m));
+
+      let merged = Array.from(map.values()).map(applyOverrides);
+      if (params.status) {
+        merged = merged.filter((m) => m.status === params.status);
+      }
       return {
         ...response.data,
-        data: response.data.data.map(sanitizeMovie),
+        count: merged.length,
+        data: merged,
       };
     }
-    const all = getStoredMovies();
+    let all = getStoredMovies();
+    if (params.status) {
+      all = all.filter((m) => m.status === params.status);
+    }
     return { success: true, count: all.length, data: all };
   } catch {
-    const all = getStoredMovies();
+    let all = getStoredMovies();
+    if (params.status) {
+      all = all.filter((m) => m.status === params.status);
+    }
     return { success: true, count: all.length, data: all };
   }
 };
@@ -144,6 +179,16 @@ export const createMovie = async (data) => {
  * @param {Object} data
  */
 export const updateMovie = async (id, data) => {
+  // Save status override if status is changed
+  if (data.status) {
+    try {
+      const overrides = JSON.parse(localStorage.getItem('imovies_movie_status_overrides') || '{}');
+      overrides[id] = data.status;
+      if (data.title) overrides[data.title.toLowerCase()] = data.status;
+      localStorage.setItem('imovies_movie_status_overrides', JSON.stringify(overrides));
+    } catch {}
+  }
+
   try {
     const response = await API.put(`/movies/${id}`, data);
     return response.data;
@@ -154,7 +199,7 @@ export const updateMovie = async (id, data) => {
       if (existingIdx !== -1) {
         custom[existingIdx] = { ...custom[existingIdx], ...data };
       } else {
-        const base = MOCK_MOVIES.find((m) => m._id === id);
+        const base = MOCK_MOVIES.find((m) => m._id === id || m.title?.toLowerCase() === data.title?.toLowerCase());
         custom.push({ ...(base || {}), _id: id, ...data });
       }
       localStorage.setItem('imovies_custom_movies', JSON.stringify(custom));
