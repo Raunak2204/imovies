@@ -36,38 +36,73 @@ const SeatSelectionPage = () => {
   // Resolve current show: reduxShow or mock fallback
   const currentShow = reduxShow && reduxShow.theatre ? reduxShow : getMockShowById(showId);
 
+  const buildConsolidatedSeatMap = (rawSeatData) => {
+    let mapObj = {};
+
+    if (rawSeatData?.seatMap) {
+      mapObj =
+        rawSeatData.seatMap instanceof Map
+          ? Object.fromEntries(rawSeatData.seatMap)
+          : { ...rawSeatData.seatMap };
+    } else if (rawSeatData?.data?.seats) {
+      // Backend structured response { seats: { available: [...], booked: [...], blocked: [...] } }
+      const { available = [], booked = [], blocked = [] } = rawSeatData.data.seats;
+      available.forEach((s) => (mapObj[s] = 'available'));
+      booked.forEach((s) => (mapObj[s] = 'booked'));
+      blocked.forEach((s) => (mapObj[s] = 'blocked'));
+    } else if (rawSeatData && typeof rawSeatData === 'object' && !rawSeatData.showId) {
+      mapObj = { ...rawSeatData };
+    } else {
+      mapObj = generateMockSeatMap(10, 15);
+    }
+
+    // Merge in any seats booked for this showId to ensure slot is filled
+    try {
+      const storedBookings = JSON.parse(localStorage.getItem('imovies_mock_bookings') || '[]');
+      storedBookings.forEach((b) => {
+        const bShowId = b.show?._id || b.show || b.showId;
+        if ((bShowId === showId || String(bShowId) === String(showId)) && b.status !== 'cancelled') {
+          (b.seats || []).forEach((st) => {
+            const seatCode = st.seatNumber || st;
+            if (seatCode) mapObj[seatCode] = 'booked';
+          });
+        }
+      });
+
+      const explicitlyBooked = JSON.parse(localStorage.getItem('imovies_booked_seats_' + showId) || '[]');
+      explicitlyBooked.forEach((seatCode) => {
+        if (seatCode) mapObj[seatCode] = 'booked';
+      });
+    } catch (e) {
+      console.error('Error merging booked seats:', e);
+    }
+
+    return mapObj;
+  };
+
   // Fetch show details
   useEffect(() => {
     if (showId) {
       dispatch(fetchShowById(showId));
       dispatch(fetchAvailableSeats(showId)).then((res) => {
-        if (res.payload?.seatMap) {
-          const mapObj =
-            res.payload.seatMap instanceof Map
-              ? Object.fromEntries(res.payload.seatMap)
-              : res.payload.seatMap;
-          setLocalSeatMap(mapObj);
-        } else if (res.payload?.data && typeof res.payload.data === 'object') {
-          setLocalSeatMap(res.payload.data);
-        } else {
-          setLocalSeatMap(generateMockSeatMap(10, 15));
-        }
+        const map = buildConsolidatedSeatMap(res.payload);
+        setLocalSeatMap(map);
       });
     }
   }, [dispatch, showId]);
 
   // Update local seat map when currentShow updates
   useEffect(() => {
+    if (currentShow?.movie) {
+      try {
+        sessionStorage.setItem('imovies_selected_movie', JSON.stringify(currentShow.movie));
+      } catch {}
+    }
     if (currentShow?.seatMap) {
-      const mapObj =
-        currentShow.seatMap instanceof Map
-          ? Object.fromEntries(currentShow.seatMap)
-          : currentShow.seatMap;
-      if (Object.keys(mapObj).length > 0) {
-        setLocalSeatMap(mapObj);
-      }
+      const map = buildConsolidatedSeatMap(currentShow);
+      setLocalSeatMap(map);
     } else if (Object.keys(localSeatMap).length === 0) {
-      setLocalSeatMap(generateMockSeatMap(10, 15));
+      setLocalSeatMap(buildConsolidatedSeatMap(null));
     }
   }, [currentShow]);
 
@@ -108,9 +143,31 @@ const SeatSelectionPage = () => {
     }
 
     try {
+      // Immediately fill the slots locally so seats cannot be re-selected
+      try {
+        const key = 'imovies_booked_seats_' + showId;
+        const currentBooked = JSON.parse(localStorage.getItem(key) || '[]');
+        const updatedBooked = Array.from(new Set([...currentBooked, ...selectedSeats]));
+        localStorage.setItem(key, JSON.stringify(updatedBooked));
+
+        setLocalSeatMap((prev) => {
+          const updated = { ...prev };
+          selectedSeats.forEach((s) => {
+            updated[s] = 'booked';
+          });
+          return updated;
+        });
+      } catch (e) {
+        console.error(e);
+      }
+
       const payload = {
         showId,
+        show: currentShow,
+        movie: currentShow?.movie,
+        theatre: currentShow?.theatre,
         seats: selectedSeats.map((s) => ({ seatNumber: s })),
+        totalAmount: calculateTotal(),
       };
 
       const result = await dispatch(createBooking(payload)).unwrap();

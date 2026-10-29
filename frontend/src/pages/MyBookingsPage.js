@@ -8,14 +8,48 @@ import {
   Tab,
   Paper,
   Button,
+  Chip,
 } from '@mui/material';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
+import DeleteSweepIcon from '@mui/icons-material/DeleteSweep';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
 import BookingCard from '../components/booking/BookingCard';
 import Loading from '../components/common/Loading';
 import { fetchUserBookings, cancelBooking } from '../redux/slices/bookingSlice';
+
+/**
+ * Check if the movie show timing has already ended/passed
+ */
+export const isBookingExpired = (booking) => {
+  if (!booking?.show) return false;
+  try {
+    const show = booking.show;
+    const dateStr = show.date ? (typeof show.date === 'string' ? show.date.split('T')[0] : new Date(show.date).toISOString().split('T')[0]) : '';
+    if (!dateStr) return false;
+
+    const timeStr = show.endTime || show.startTime || '11:59 PM';
+    const match = timeStr.match(/(\d+):(\d+)\s*(AM|PM)?/i);
+
+    const showDate = new Date(dateStr);
+    if (match) {
+      let hours = parseInt(match[1], 10);
+      const minutes = parseInt(match[2], 10);
+      const ampm = (match[3] || 'PM').toUpperCase();
+      if (ampm === 'PM' && hours < 12) hours += 12;
+      if (ampm === 'AM' && hours === 12) hours = 0;
+      showDate.setHours(hours, minutes, 0, 0);
+    } else {
+      showDate.setHours(23, 59, 59, 999);
+    }
+
+    return showDate.getTime() < Date.now();
+  } catch {
+    return false;
+  }
+};
 
 const MyBookingsPage = () => {
   const dispatch = useDispatch();
@@ -39,21 +73,53 @@ const MyBookingsPage = () => {
     }
   };
 
+  const handleClearPastTickets = () => {
+    try {
+      const stored = JSON.parse(localStorage.getItem('imovies_mock_bookings') || '[]');
+      const activeOnly = stored.filter((b) => !isBookingExpired(b));
+      localStorage.setItem('imovies_mock_bookings', JSON.stringify(activeOnly));
+      toast.success('Past and expired show tickets cleared from your history');
+      dispatch(fetchUserBookings());
+    } catch (err) {
+      toast.error('Failed to clear tickets');
+    }
+  };
+
+  const upcomingBookings = bookings.filter((b) => b.status !== 'cancelled' && !isBookingExpired(b));
+  const pastBookings = bookings.filter((b) => b.status !== 'cancelled' && isBookingExpired(b));
+  const cancelledBookings = bookings.filter((b) => b.status === 'cancelled');
+
   const filteredBookings = bookings.filter((b) => {
-    if (filterTab === 1) return b.status === 'confirmed';
-    if (filterTab === 2) return b.status === 'cancelled';
+    if (filterTab === 0) return b.status !== 'cancelled' && !isBookingExpired(b); // Upcoming
+    if (filterTab === 1) return b.status !== 'cancelled' && isBookingExpired(b); // Past / Expired
+    if (filterTab === 2) return b.status === 'cancelled'; // Cancelled
     return true; // All
   });
 
   return (
     <Container maxWidth="lg" sx={{ py: 5 }}>
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" fontWeight={800} color="#fff" gutterBottom>
-          My Bookings
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Track upcoming movie shows, download digital tickets, or manage cancellations
-        </Typography>
+      <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 2 }}>
+        <div>
+          <Typography variant="h4" fontWeight={800} color="#fff" gutterBottom>
+            My Bookings
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Upcoming show tickets remain active until movie timing ends, then automatically move to past shows.
+          </Typography>
+        </div>
+
+        {pastBookings.length > 0 && filterTab === 1 && (
+          <Button
+            variant="outlined"
+            color="error"
+            size="small"
+            startIcon={<DeleteSweepIcon />}
+            onClick={handleClearPastTickets}
+            sx={{ textTransform: 'none' }}
+          >
+            Clear All Past Tickets
+          </Button>
+        )}
       </Box>
 
       {/* Filter Tabs */}
@@ -79,13 +145,10 @@ const MyBookingsPage = () => {
             },
           }}
         >
+          <Tab label={`Upcoming (${upcomingBookings.length})`} />
+          <Tab label={`Past Shows (${pastBookings.length})`} />
+          <Tab label={`Cancelled (${cancelledBookings.length})`} />
           <Tab label={`All Bookings (${bookings.length})`} />
-          <Tab
-            label={`Confirmed (${bookings.filter((b) => b.status === 'confirmed').length})`}
-          />
-          <Tab
-            label={`Cancelled (${bookings.filter((b) => b.status === 'cancelled').length})`}
-          />
         </Tabs>
       </Paper>
 

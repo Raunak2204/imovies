@@ -7,16 +7,42 @@ import { saveMockBooking, getMockBookingById, MOCK_MOVIES, MOCK_THEATRES } from 
 export const createBooking = createAsyncThunk('bookings/create', async (data, { rejectWithValue, getState }) => {
   try {
     const result = await bookingService.createBooking(data);
-    const bookingRecord = result.data || result.booking || result;
+    let bookingRecord = result.data || result.booking || result;
     if (bookingRecord && bookingRecord._id) {
+      if (!bookingRecord.movie || typeof bookingRecord.movie === 'string') {
+        try {
+          bookingRecord.movie = data.movie || JSON.parse(sessionStorage.getItem('imovies_selected_movie') || 'null');
+        } catch {}
+      }
+      if (!bookingRecord.theatre || typeof bookingRecord.theatre === 'string') {
+        bookingRecord.theatre = data.theatre;
+      }
+      if (!bookingRecord.show || typeof bookingRecord.show === 'string') {
+        bookingRecord.show = data.show;
+      }
       saveMockBooking(bookingRecord);
     }
     return result;
   } catch (err) {
     // Graceful offline mock booking creation
     const state = getState();
-    const currentShow = state.shows.currentShow;
+    const currentShow = data.show || state.shows.currentShow;
     const user = state.auth.user || { name: 'Demo Guest', email: 'guest@imovies.com' };
+
+    let selectedMovie = data.movie || currentShow?.movie;
+    if (!selectedMovie) {
+      try {
+        selectedMovie = JSON.parse(sessionStorage.getItem('imovies_selected_movie') || 'null');
+      } catch {}
+    }
+    if (!selectedMovie) {
+      selectedMovie = MOCK_MOVIES[0];
+    }
+
+    let selectedTheatre = data.theatre || currentShow?.theatre;
+    if (!selectedTheatre) {
+      selectedTheatre = MOCK_THEATRES[0];
+    }
 
     const bookingId = 'BK' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substr(2, 4).toUpperCase();
     const mockBooking = {
@@ -31,14 +57,14 @@ export const createBooking = createAsyncThunk('bookings/create', async (data, { 
         screenNumber: 1,
         price: { regular: 200, premium: 350, vip: 500 },
       },
-      movie: currentShow?.movie || MOCK_MOVIES[0],
-      theatre: currentShow?.theatre || MOCK_THEATRES[0],
+      movie: selectedMovie,
+      theatre: selectedTheatre,
       seats: data.seats.map((s) => ({
         seatNumber: s.seatNumber,
         seatType: ['A', 'B'].includes(s.seatNumber?.charAt(0)) ? 'vip' : ['C', 'D', 'E', 'F'].includes(s.seatNumber?.charAt(0)) ? 'premium' : 'regular',
         price: ['A', 'B'].includes(s.seatNumber?.charAt(0)) ? 500 : ['C', 'D', 'E', 'F'].includes(s.seatNumber?.charAt(0)) ? 350 : 200,
       })),
-      totalAmount: data.seats.reduce((sum, s) => {
+      totalAmount: data.totalAmount || data.seats.reduce((sum, s) => {
         const row = s.seatNumber?.charAt(0);
         return sum + (['A', 'B'].includes(row) ? 500 : ['C', 'D', 'E', 'F'].includes(row) ? 350 : 200);
       }, 0),
@@ -99,25 +125,33 @@ export const fetchUserBookings = createAsyncThunk('bookings/fetchUserBookings', 
 });
 
 export const cancelBooking = createAsyncThunk('bookings/cancel', async (id, { rejectWithValue }) => {
+  const releaseLocalSeats = () => {
+    try {
+      const stored = JSON.parse(localStorage.getItem('imovies_mock_bookings') || '[]');
+      const target = stored.find((b) => b._id === id || b.bookingNumber === id);
+      const updated = stored.map((b) => (b._id === id || b.bookingNumber === id ? { ...b, status: 'cancelled' } : b));
+      localStorage.setItem('imovies_mock_bookings', JSON.stringify(updated));
+
+      // Release seats from show's booked seats registry
+      if (target && target.show) {
+        const showId = target.show._id || target.show;
+        const key = 'imovies_booked_seats_' + showId;
+        const currentBooked = JSON.parse(localStorage.getItem(key) || '[]');
+        const seatCodes = (target.seats || []).map((s) => s.seatNumber || s);
+        const remaining = currentBooked.filter((s) => !seatCodes.includes(s));
+        localStorage.setItem(key, JSON.stringify(remaining));
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   try {
     const data = await bookingService.cancelBooking(id);
-    // Update local storage too
-    try {
-      const stored = JSON.parse(localStorage.getItem('imovies_mock_bookings') || '[]');
-      const updated = stored.map((b) => (b._id === id || b.bookingNumber === id ? { ...b, status: 'cancelled' } : b));
-      localStorage.setItem('imovies_mock_bookings', JSON.stringify(updated));
-    } catch (e) {
-      console.error(e);
-    }
+    releaseLocalSeats();
     return { id, ...data };
   } catch (err) {
-    try {
-      const stored = JSON.parse(localStorage.getItem('imovies_mock_bookings') || '[]');
-      const updated = stored.map((b) => (b._id === id || b.bookingNumber === id ? { ...b, status: 'cancelled' } : b));
-      localStorage.setItem('imovies_mock_bookings', JSON.stringify(updated));
-    } catch (e) {
-      console.error(e);
-    }
+    releaseLocalSeats();
     return { id, success: true };
   }
 });

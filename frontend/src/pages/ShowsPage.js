@@ -92,6 +92,14 @@ const ShowsPage = () => {
 
   const movie = currentMovie || MOCK_MOVIES.find((m) => m._id === movieId) || MOCK_MOVIES[0];
 
+  useEffect(() => {
+    if (movie && movie.title) {
+      try {
+        sessionStorage.setItem('imovies_selected_movie', JSON.stringify(movie));
+      } catch {}
+    }
+  }, [movie]);
+
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
       {/* Back Button */}

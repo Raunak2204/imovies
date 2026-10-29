@@ -10,6 +10,11 @@ import {
   Avatar,
   Paper,
   Divider,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  IconButton,
 } from '@mui/material';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
@@ -17,12 +22,23 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import LanguageIcon from '@mui/icons-material/Language';
 import MovieIcon from '@mui/icons-material/Movie';
+import CloseIcon from '@mui/icons-material/Close';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { formatDate, formatDuration } from '../../utils/helpers';
 import { getVerifiedPoster } from './MovieCard';
+
+export const getYoutubeEmbedUrl = (url) => {
+  if (!url) return '';
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+  const match = url.match(regExp);
+  const videoId = match && match[2].length === 11 ? match[2] : null;
+  return videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0` : url;
+};
 
 const MovieDetail = ({ movie }) => {
   const navigate = useNavigate();
   const [imgError, setImgError] = useState(false);
+  const [trailerOpen, setTrailerOpen] = useState(false);
 
   if (!movie) return null;
 
@@ -188,9 +204,7 @@ const MovieDetail = ({ movie }) => {
                   variant="outlined"
                   size="large"
                   startIcon={<PlayCircleOutlineIcon />}
-                  href={movie.trailerUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  onClick={() => setTrailerOpen(true)}
                   sx={{
                     px: 3,
                     borderColor: 'rgba(255, 255, 255, 0.3)',
@@ -319,6 +333,75 @@ const MovieDetail = ({ movie }) => {
           </Paper>
         </Grid>
       </Grid>
+
+      {/* Integrated In-App YouTube Trailer Player */}
+      <Dialog
+        open={trailerOpen}
+        onClose={() => setTrailerOpen(false)}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{
+          sx: {
+            bgcolor: '#0a0f1d',
+            borderRadius: 3,
+            overflow: 'hidden',
+            border: '1px solid rgba(233, 69, 96, 0.4)',
+          },
+        }}
+      >
+        <DialogTitle
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            bgcolor: '#16213e',
+            color: '#fff',
+            p: 2,
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <PlayCircleOutlineIcon sx={{ color: '#e94560' }} />
+            <Typography variant="h6" fontWeight={700}>
+              {movie.title} - Official Trailer
+            </Typography>
+          </Box>
+          <IconButton onClick={() => setTrailerOpen(false)} sx={{ color: 'text.secondary' }}>
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+
+        <DialogContent sx={{ p: 0, bgcolor: '#000', display: 'flex', justifyContent: 'center' }}>
+          <Box sx={{ width: '100%', height: { xs: 260, sm: 440 }, bgcolor: '#000' }}>
+            {movie.trailerUrl && (
+              <iframe
+                width="100%"
+                height="100%"
+                src={getYoutubeEmbedUrl(movie.trailerUrl)}
+                title={`${movie.title} Trailer`}
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            )}
+          </Box>
+        </DialogContent>
+
+        <DialogActions sx={{ bgcolor: '#16213e', p: 1.5, justifyContent: 'space-between' }}>
+          <Button
+            href={movie.trailerUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            size="small"
+            startIcon={<OpenInNewIcon />}
+            sx={{ color: '#e94560', textTransform: 'none', fontWeight: 600 }}
+          >
+            Watch directly on YouTube
+          </Button>
+          <Button onClick={() => setTrailerOpen(false)} sx={{ color: 'text.secondary' }}>
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

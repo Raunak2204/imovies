@@ -246,6 +246,253 @@ export const MOCK_MOVIES = [
       { name: 'Oscar Isaac', role: 'Miguel O\'Hara (voice)' },
     ],
   },
+  {
+    _id: 'movie_jawan_11',
+    title: 'Jawan',
+    description:
+      'A high-octane action thriller outlining the emotional journey of a man who is set to rectify the wrongs in the society while fulfilling a promise made years ago.',
+    genre: ['Action', 'Thriller'],
+    language: 'English',
+    duration: 169,
+    releaseDate: '2024-01-10',
+    rating: 8.4,
+    averageRating: 8.4,
+    totalReviews: 3420,
+    posterUrl: 'https://image.tmdb.org/t/p/w500/jFt1g94utjjrEgmozLi2EBvR969.jpg',
+    bannerUrl: 'https://image.tmdb.org/t/p/original/b9UCfuzwiMUVDEolGQfyua4QZ1I.jpg',
+    trailerUrl: 'https://www.youtube.com/watch?v=COv52Qyctws',
+    certificate: 'UA',
+    status: 'now_showing',
+    director: 'Atlee',
+    cast: [
+      { name: 'Shah Rukh Khan', role: 'Vikram Rathore / Azad' },
+      { name: 'Nayanthara', role: 'Narmada Rai' },
+      { name: 'Vijay Sethupathi', role: 'Kaalie Gaikwad' },
+    ],
+  },
+  {
+    _id: 'movie_animal_12',
+    title: 'Animal',
+    description:
+      'A son’s fierce love for his father turns obsessive and toxic, plunging him into a dark journey of violence and bloody vengeance.',
+    genre: ['Action', 'Crime', 'Drama'],
+    language: 'English',
+    duration: 201,
+    releaseDate: '2024-02-15',
+    rating: 8.0,
+    averageRating: 8.0,
+    totalReviews: 2980,
+    posterUrl: 'https://image.tmdb.org/t/p/w500/hr95v8rlzgWsUN0XkvhCe1A0G2Q.jpg',
+    bannerUrl: 'https://image.tmdb.org/t/p/original/yOm993fn34d4sFq8pP8o6u103zP.jpg',
+    trailerUrl: 'https://www.youtube.com/watch?v=Dydmpfo68DA',
+    certificate: 'A',
+    status: 'now_showing',
+    director: 'Sandeep Reddy Vanga',
+    cast: [
+      { name: 'Ranbir Kapoor', role: 'Ranvijay Singh' },
+      { name: 'Anil Kapoor', role: 'Balbir Singh' },
+      { name: 'Rashmika Mandanna', role: 'Geetanjali' },
+      { name: 'Bobby Deol', role: 'Abrar Haque' },
+    ],
+  },
+  {
+    _id: 'movie_stree2_13',
+    title: 'Stree 2',
+    description:
+      'The town of Chanderi is being haunted again, this time by a headless entity named Sarkata that abducts modern women, forcing Vicky and his friends to reunite with the mysterious girl.',
+    genre: ['Comedy', 'Horror'],
+    language: 'English',
+    duration: 147,
+    releaseDate: '2024-08-15',
+    rating: 8.2,
+    averageRating: 8.2,
+    totalReviews: 2650,
+    posterUrl: 'https://image.tmdb.org/t/p/w500/8yK3m5yP8r2m4kQ7k8r7m0yQ6l2.jpg',
+    bannerUrl: 'https://image.tmdb.org/t/p/original/4HodYYKEIsGOdinkGi2Ucz6X9i0.jpg',
+    trailerUrl: 'https://www.youtube.com/watch?v=kv1xS995c7o',
+    certificate: 'UA',
+    status: 'now_showing',
+    director: 'Amar Kaushik',
+    cast: [
+      { name: 'Rajkummar Rao', role: 'Vicky' },
+      { name: 'Shraddha Kapoor', role: 'She' },
+      { name: 'Pankaj Tripathi', role: 'Rudra' },
+      { name: 'Abhishek Banerjee', role: 'Jana' },
+    ],
+  },
+  {
+    _id: 'movie_fighter_14',
+    title: 'Fighter',
+    description:
+      'Top IAF aviators come together in the face of imminent danger, to form Air Dragons - a specialized quick response team confronting terrorist threats.',
+    genre: ['Action', 'War', 'Thriller'],
+    language: 'English',
+    duration: 166,
+    releaseDate: '2024-01-25',
+    rating: 7.9,
+    averageRating: 7.9,
+    totalReviews: 2150,
+    posterUrl: 'https://image.tmdb.org/t/p/w500/zDZowWBvGslv71n5nE3b6c2o0uR.jpg',
+    bannerUrl: 'https://image.tmdb.org/t/p/original/edv5CZvWj09upOsy2Y6IwDhK8bt.jpg',
+    trailerUrl: 'https://www.youtube.com/watch?v=6amIq_mP4xM',
+    certificate: 'UA',
+    status: 'now_showing',
+    director: 'Siddharth Anand',
+    cast: [
+      { name: 'Hrithik Roshan', role: 'Shamsher Pathania (Patty)' },
+      { name: 'Deepika Padukone', role: 'Minal Rathore (Minni)' },
+      { name: 'Anil Kapoor', role: 'Rakesh Jaisingh (Rocky)' },
+    ],
+  },
+  {
+    _id: 'movie_dunki_15',
+    title: 'Dunki',
+    description:
+      'Four friends from a village in Punjab share a common dream to go to England. Their problem is that they have neither the visa nor the ticket.',
+    genre: ['Comedy', 'Drama'],
+    language: 'English',
+    duration: 161,
+    releaseDate: '2024-03-20',
+    rating: 7.7,
+    averageRating: 7.7,
+    totalReviews: 1890,
+    posterUrl: 'https://image.tmdb.org/t/p/w500/4vMhQ1x7Q8n9k3m5yP8r2m4kQ7.jpg',
+    bannerUrl: 'https://image.tmdb.org/t/p/original/xJHokMbljvjADYdit5fK1DVfjko.jpg',
+    trailerUrl: 'https://www.youtube.com/watch?v=kYJv9cK7r5k',
+    certificate: 'U',
+    status: 'now_showing',
+    director: 'Rajkumar Hirani',
+    cast: [
+      { name: 'Shah Rukh Khan', role: 'Hardayal Singh Dhillon (Hardy)' },
+      { name: 'Taapsee Pannu', role: 'Manu Randhawa' },
+      { name: 'Vicky Kaushal', role: 'Sukhi' },
+      { name: 'Boman Irani', role: 'Geetu Gulati' },
+    ],
+  },
+  {
+    _id: 'movie_war2_16',
+    title: 'War 2',
+    description:
+      'Major Kabir Dhaliwal returns for a perilous international mission, facing off against a formidable new rival in the YRF Spy Universe.',
+    genre: ['Action', 'Thriller'],
+    language: 'English',
+    duration: 160,
+    releaseDate: '2025-08-14',
+    rating: 8.5,
+    averageRating: 8.5,
+    totalReviews: 1450,
+    posterUrl: 'https://image.tmdb.org/t/p/w500/53p4t8W5n1jK7k8r7m0yQ6l2a0.jpg',
+    bannerUrl: 'https://image.tmdb.org/t/p/original/8ZTVqvKDQ8emSGUEMjsS4yHAwrp.jpg',
+    trailerUrl: 'https://www.youtube.com/watch?v=tQ0mzXRk-oU',
+    certificate: 'UA',
+    status: 'coming_soon',
+    director: 'Ayan Mukerji',
+    cast: [
+      { name: 'Hrithik Roshan', role: 'Major Kabir Dhaliwal' },
+      { name: 'Jr. NTR', role: 'Agent Vikram' },
+      { name: 'Kiara Advani', role: 'Special Agent' },
+    ],
+  },
+  {
+    _id: 'movie_singhamagain_17',
+    title: 'Singham Again',
+    description:
+      'DCP Bajirao Singham leads the Cop Universe heroes on a high-stakes cross-border rescue mission infused with epic mythology.',
+    genre: ['Action', 'Drama'],
+    language: 'English',
+    duration: 155,
+    releaseDate: '2025-11-01',
+    rating: 8.1,
+    averageRating: 8.1,
+    totalReviews: 1240,
+    posterUrl: 'https://image.tmdb.org/t/p/w500/6yT9Z8X4qW2vK0n3m5yP8r2m4kQ.jpg',
+    bannerUrl: 'https://image.tmdb.org/t/p/original/hkBaDkMWbLaf8B1lsWsKX7Ew3Xq.jpg',
+    trailerUrl: 'https://www.youtube.com/watch?v=3R1tC8r9p3Q',
+    certificate: 'UA',
+    status: 'coming_soon',
+    director: 'Rohit Shetty',
+    cast: [
+      { name: 'Ajay Devgn', role: 'Bajirao Singham' },
+      { name: 'Kareena Kapoor Khan', role: 'Avni Kamat Singham' },
+      { name: 'Deepika Padukone', role: 'SP Shakti Shetty' },
+      { name: 'Ranveer Singh', role: 'Sangram Bhalerao (Simmba)' },
+    ],
+  },
+  {
+    _id: 'movie_bhoolbhulaiyaa3_18',
+    title: 'Bhool Bhulaiyaa 3',
+    description:
+      'Rooh Baba ventures into the kingdom of Rakhtghat in West Bengal, where he must confront two vengeful spirits claiming to be Manjulika.',
+    genre: ['Comedy', 'Horror'],
+    language: 'English',
+    duration: 158,
+    releaseDate: '2025-10-31',
+    rating: 8.0,
+    averageRating: 8.0,
+    totalReviews: 980,
+    posterUrl: 'https://image.tmdb.org/t/p/w500/8yK3m5yP8r2m4kQ7k8r7m0yQ6l2.jpg',
+    bannerUrl: 'https://image.tmdb.org/t/p/original/fm6K9vYI7vdEN39HaAYqqqGhTeC.jpg',
+    trailerUrl: 'https://www.youtube.com/watch?v=8yK3m5yP8r2',
+    certificate: 'UA',
+    status: 'coming_soon',
+    director: 'Anees Bazmee',
+    cast: [
+      { name: 'Kartik Aaryan', role: 'Ruhan Randhawa (Rooh Baba)' },
+      { name: 'Vidya Balan', role: 'Mallika / Manjulika' },
+      { name: 'Madhuri Dixit', role: 'Mandira / Anjulika' },
+      { name: 'Triptii Dimri', role: 'Meera' },
+    ],
+  },
+  {
+    _id: 'movie_brahmastra2_19',
+    title: 'Brahmastra Part Two: Dev',
+    description:
+      'The cosmic Astraverse saga continues, revealing the dark past and unstoppable power of Dev, Shiva’s father and wielder of the Agnyastra.',
+    genre: ['Fantasy', 'Action', 'Adventure'],
+    language: 'English',
+    duration: 170,
+    releaseDate: '2026-12-01',
+    rating: 8.3,
+    averageRating: 8.3,
+    totalReviews: 1100,
+    posterUrl: 'https://image.tmdb.org/t/p/w500/x7XunwM2k1n2k3m5yP8r2m4kQ7.jpg',
+    bannerUrl: 'https://image.tmdb.org/t/p/original/8ZTVqvKDQ8emSGUEMjsS4yHAwrp.jpg',
+    trailerUrl: 'https://www.youtube.com/watch?v=V5Z8m3r4m5k',
+    certificate: 'UA',
+    status: 'coming_soon',
+    director: 'Ayan Mukerji',
+    cast: [
+      { name: 'Ranbir Kapoor', role: 'Shiva' },
+      { name: 'Alia Bhatt', role: 'Isha' },
+      { name: 'Ranveer Singh', role: 'Dev' },
+      { name: 'Amitabh Bachchan', role: 'Guruji' },
+    ],
+  },
+  {
+    _id: 'movie_tiger3_20',
+    title: 'Tiger 3',
+    description:
+      'Following the events of Tiger Zinda Hai and War, Tiger and Zoya are framed as traitors by a vengeful ex-ISI terrorist and must go rogue to clear their names.',
+    genre: ['Action', 'Thriller'],
+    language: 'English',
+    duration: 156,
+    releaseDate: '2025-06-15',
+    rating: 7.8,
+    averageRating: 7.8,
+    totalReviews: 2400,
+    posterUrl: 'https://image.tmdb.org/t/p/w500/7I6VUdPj6tQECNHdviJkUHD2f89.jpg',
+    bannerUrl: 'https://image.tmdb.org/t/p/original/qJ2tW6WMUDux911BTUgMe1nNaD3.jpg',
+    trailerUrl: 'https://www.youtube.com/watch?v=vMzm3rKmsV0',
+    certificate: 'UA',
+    status: 'coming_soon',
+    director: 'Maneesh Sharma',
+    cast: [
+      { name: 'Salman Khan', role: 'Avinash Singh Rathore (Tiger)' },
+      { name: 'Katrina Kaif', role: 'Zoya Humaimi' },
+      { name: 'Emraan Hashmi', role: 'Aatish Rehman' },
+      { name: 'Shah Rukh Khan', role: 'Pathaan (Cameo)' },
+    ],
+  },
 ];
 
 /**
@@ -356,16 +603,29 @@ export const generateMockSeatMap = (rowsCount = 10, colsCount = 15) => {
  * Generate mock shows for a given movie and date across all 4 cinema halls
  */
 export const getMockGroupedTheatres = (movieId, dateStr) => {
-  const movie = MOCK_MOVIES.find((m) => m._id === movieId) || MOCK_MOVIES[0];
+  let movie = MOCK_MOVIES.find(
+    (m) => m._id === movieId || m.title?.toLowerCase() === movieId?.toLowerCase()
+  );
+  if (!movie) {
+    try {
+      const stored = JSON.parse(sessionStorage.getItem('imovies_selected_movie') || 'null');
+      if (stored && (stored._id === movieId || stored.title?.toLowerCase() === movieId?.toLowerCase())) {
+        movie = stored;
+      }
+    } catch {}
+  }
+  if (!movie) movie = MOCK_MOVIES[0];
+
   const showTimes = ['10:00 AM', '01:30 PM', '05:00 PM', '08:30 PM'];
+  const movieSlug = (movie.title || 'mv').toLowerCase().replace(/[^a-z0-9]/g, '');
 
   return MOCK_THEATRES.map((theatre, tIndex) => {
     // Stagger showtimes slightly per theatre
     const theatreShowTimes = showTimes.slice(tIndex % 2, 4);
 
     const shows = theatreShowTimes.map((time, sIndex) => {
-      const showId = `mock_show_${movieId || 'mv'}_${theatre._id}_${dateStr || 'today'}_${sIndex}`;
-      return {
+      const showId = `mock_show_${movieSlug}_${movie._id}_${theatre._id}_${dateStr || 'today'}_${sIndex}`;
+      const showObj = {
         _id: showId,
         movie,
         theatre,
@@ -382,6 +642,14 @@ export const getMockGroupedTheatres = (movieId, dateStr) => {
         totalSeats: 150,
         status: 'active',
       };
+
+      try {
+        const cached = JSON.parse(sessionStorage.getItem('imovies_cached_shows') || '{}');
+        cached[showId] = showObj;
+        sessionStorage.setItem('imovies_cached_shows', JSON.stringify(cached));
+      } catch {}
+
+      return showObj;
     });
 
     return {
@@ -395,17 +663,40 @@ export const getMockGroupedTheatres = (movieId, dateStr) => {
  * Retrieve a mock show by ID
  */
 export const getMockShowById = (showId) => {
-  // Parse parts if possible: mock_show_{movieId}_{theatreId}_{date}_{index}
-  let foundMovie = MOCK_MOVIES[0];
-  let foundTheatre = MOCK_THEATRES[0];
+  // 1. Check cached shows in sessionStorage
+  try {
+    const cached = JSON.parse(sessionStorage.getItem('imovies_cached_shows') || '{}');
+    if (cached[showId] && cached[showId].movie) {
+      return cached[showId];
+    }
+  } catch {}
 
+  let foundMovie = null;
+
+  // 2. Match movie from showId string
   for (const m of MOCK_MOVIES) {
-    if (showId && showId.includes(m._id)) {
+    const slug = m.title?.toLowerCase().replace(/[^a-z0-9]/g, '');
+    if (showId && (showId.includes(m._id) || (slug && showId.toLowerCase().includes(slug)))) {
       foundMovie = m;
       break;
     }
   }
 
+  // 3. Fallback to active selected movie from sessionStorage
+  if (!foundMovie) {
+    try {
+      const stored = JSON.parse(sessionStorage.getItem('imovies_selected_movie') || 'null');
+      if (stored && stored.title) {
+        foundMovie = stored;
+      }
+    } catch {}
+  }
+
+  if (!foundMovie) {
+    foundMovie = MOCK_MOVIES[0];
+  }
+
+  let foundTheatre = MOCK_THEATRES[0];
   for (const t of MOCK_THEATRES) {
     if (showId && showId.includes(t._id)) {
       foundTheatre = t;
@@ -413,7 +704,7 @@ export const getMockShowById = (showId) => {
     }
   }
 
-  return {
+  const generatedShow = {
     _id: showId,
     movie: foundMovie,
     theatre: foundTheatre,
@@ -431,6 +722,14 @@ export const getMockShowById = (showId) => {
     seatMap: generateMockSeatMap(10, 15),
     status: 'active',
   };
+
+  try {
+    const cached = JSON.parse(sessionStorage.getItem('imovies_cached_shows') || '{}');
+    cached[showId] = generatedShow;
+    sessionStorage.setItem('imovies_cached_shows', JSON.stringify(cached));
+  } catch {}
+
+  return generatedShow;
 };
 
 function calculateMockEndTime(startTime, durationMinutes) {
@@ -468,16 +767,28 @@ export const saveMockBooking = (bookingData) => {
 export const getMockBookingById = (bookingId) => {
   try {
     const existing = JSON.parse(localStorage.getItem('imovies_mock_bookings') || '[]');
-    const found = existing.find((b) => b._id === bookingId);
-    if (found) return found;
+    const found = existing.find((b) => b._id === bookingId || b.bookingNumber === bookingId);
+    if (found && found.movie) return found;
   } catch (err) {
     console.error('Error getting mock booking:', err);
   }
 
-  // Fallback realistic booking
+  // Check if any booking exists in storage
+  try {
+    const existing = JSON.parse(localStorage.getItem('imovies_mock_bookings') || '[]');
+    if (existing.length > 0 && existing[0].movie) return existing[0];
+  } catch {}
+
+  // Fallback realistic booking using active selected movie
+  let activeMovie = MOCK_MOVIES[0];
+  try {
+    const saved = JSON.parse(sessionStorage.getItem('imovies_selected_movie') || 'null');
+    if (saved && saved.title) activeMovie = saved;
+  } catch {}
+
   return {
     _id: bookingId || 'BK' + Date.now().toString(36).toUpperCase(),
-    movie: MOCK_MOVIES[0],
+    movie: activeMovie,
     theatre: MOCK_THEATRES[0],
     show: {
       _id: 'show_default',

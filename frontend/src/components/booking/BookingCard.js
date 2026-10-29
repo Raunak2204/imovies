@@ -19,7 +19,9 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 import QrCode2Icon from '@mui/icons-material/QrCode2';
+import AccessTimeFilledIcon from '@mui/icons-material/AccessTimeFilled';
 import { formatCurrency, formatDate, getStatusColor } from '../../utils/helpers';
+import { isBookingExpired } from '../../pages/MyBookingsPage';
 
 const BookingCard = ({ booking, onCancel }) => {
   const navigate = useNavigate();
@@ -27,6 +29,9 @@ const BookingCard = ({ booking, onCancel }) => {
   const [cancelling, setCancelling] = useState(false);
 
   const { movie, theatre, show, seats = [], totalAmount, status, createdAt, _id } = booking;
+
+  const expired = isBookingExpired(booking);
+  const isCancellable = (status === 'confirmed' || status === 'pending') && !expired;
 
   const handleConfirmCancel = async () => {
     try {
@@ -37,8 +42,6 @@ const BookingCard = ({ booking, onCancel }) => {
       setCancelling(false);
     }
   };
-
-  const isCancellable = status === 'confirmed' || status === 'pending';
 
   return (
     <>
@@ -107,16 +110,43 @@ const BookingCard = ({ booking, onCancel }) => {
                   Booking ID: #{_id ? _id.slice(-8).toUpperCase() : 'N/A'} • Booked on {formatDate(createdAt)}
                 </Typography>
               </div>
-              <Chip
-                label={status ? status.toUpperCase() : 'CONFIRMED'}
-                size="small"
-                sx={{
-                  bgcolor: `${getStatusColor(status)}20`,
-                  color: getStatusColor(status),
-                  fontWeight: 700,
-                  border: `1px solid ${getStatusColor(status)}`,
-                }}
-              />
+              <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                {status === 'cancelled' ? (
+                  <Chip
+                    label="CANCELLED"
+                    size="small"
+                    sx={{
+                      bgcolor: 'rgba(233, 69, 96, 0.2)',
+                      color: '#e94560',
+                      fontWeight: 700,
+                      border: '1px solid #e94560',
+                    }}
+                  />
+                ) : expired ? (
+                  <Chip
+                    icon={<AccessTimeFilledIcon sx={{ fontSize: '14px !important', color: '#ffa726 !important' }} />}
+                    label="SHOW ENDED (PAST)"
+                    size="small"
+                    sx={{
+                      bgcolor: 'rgba(255, 167, 38, 0.15)',
+                      color: '#ffa726',
+                      fontWeight: 700,
+                      border: '1px solid #ffa726',
+                    }}
+                  />
+                ) : (
+                  <Chip
+                    label="CONFIRMED • UPCOMING"
+                    size="small"
+                    sx={{
+                      bgcolor: 'rgba(76, 175, 80, 0.15)',
+                      color: '#4caf50',
+                      fontWeight: 700,
+                      border: '1px solid #4caf50',
+                    }}
+                  />
+                )}
+              </Box>
             </Box>
 
             <Divider sx={{ my: 1.5, borderColor: 'rgba(255, 255, 255, 0.06)' }} />

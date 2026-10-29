@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
 import {
   Box,
   Typography,
@@ -9,16 +10,21 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
+  DialogContentText,
   DialogActions,
   FormControl,
   Select,
   MenuItem,
   InputLabel,
   Grid,
+  Tooltip,
 } from '@mui/material';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import PersonIcon from '@mui/icons-material/Person';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import DeleteSweepIcon from '@mui/icons-material/DeleteSweep';
+import ShieldIcon from '@mui/icons-material/Shield';
 import { toast } from 'react-toastify';
 
 import AdminLayout from '../components/admin/AdminLayout';
@@ -27,12 +33,20 @@ import * as authService from '../services/authService';
 import { formatDate } from '../utils/helpers';
 
 const AdminUsersPage = () => {
+  const currentUser = useSelector((state) => state.auth.user);
+  const isSuperAdmin = currentUser?.email === 'superadmin@imovies.com' || currentUser?.role === 'superadmin';
+
   const [users, setUsers] = useState([]);
   const [roleFilter, setRoleFilter] = useState('');
   const [loading, setLoading] = useState(true);
 
   const [selectedUser, setSelectedUser] = useState(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
+
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState(null);
+  const [clearDialogOpen, setClearDialogOpen] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
 
   const fetchUsersList = async () => {
     try {
@@ -51,6 +65,39 @@ const AdminUsersPage = () => {
   useEffect(() => {
     fetchUsersList();
   }, [roleFilter]);
+
+  const handleDeleteUser = async () => {
+    if (!userToDelete) return;
+    try {
+      setActionLoading(true);
+      await authService.deleteUser(userToDelete._id, userToDelete.email);
+      toast.success(`${userToDelete.role === 'admin' ? 'Administrator' : 'User'} "${userToDelete.name}" removed successfully`);
+      setDeleteDialogOpen(false);
+      setUserToDelete(null);
+      if (detailsOpen && selectedUser?._id === userToDelete._id) {
+        setDetailsOpen(false);
+      }
+      fetchUsersList();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to remove user');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleClearAllUsers = async () => {
+    try {
+      setActionLoading(true);
+      await authService.clearAllUsers();
+      toast.success('All non-superadmin users and admins cleared successfully');
+      setClearDialogOpen(false);
+      fetchUsersList();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to clear user directory');
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
   const columns = [
     {
@@ -145,18 +192,60 @@ const AdminUsersPage = () => {
       id: 'actions',
       label: 'Actions',
       align: 'right',
-      render: (row) => (
-        <IconButton
-          size="small"
-          color="primary"
-          onClick={() => {
-            setSelectedUser(row);
-            setDetailsOpen(true);
-          }}
-        >
-          <VisibilityIcon fontSize="small" />
-        </IconButton>
-      ),
+      render: (row) => {
+        const isTargetSuper = row.email === 'superadmin@imovies.com';
+        const isTargetAdmin = row.role === 'admin';
+        // Super Admin can delete admins and users. Normal admin can only delete users.
+        const canDelete = !isTargetSuper && (isSuperAdmin || !isTargetAdmin);
+
+        return (
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+            <Tooltip title="View User Details">
+              <IconButton
+                size="small"
+                color="primary"
+                onClick={() => {
+                  setSelectedUser(row);
+                  setDetailsOpen(true);
+                }}
+              >
+                <VisibilityIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+
+            {canDelete ? (
+              <Tooltip title={isTargetAdmin ? 'Super Admin: Remove Administrator' : 'Delete User'}>
+                <IconButton
+                  size="small"
+                  color="error"
+                  onClick={() => {
+                    setUserToDelete(row);
+                    setDeleteDialogOpen(true);
+                  }}
+                >
+                  <DeleteOutlineIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            ) : isTargetSuper ? (
+              <Tooltip title="Super Admin Account (Protected)">
+                <span>
+                  <IconButton size="small" disabled sx={{ color: 'rgba(255, 215, 0, 0.4)' }}>
+                    <ShieldIcon fontSize="small" />
+                  </IconButton>
+                </span>
+              </Tooltip>
+            ) : (
+              <Tooltip title="Only Super Admin can delete admin accounts">
+                <span>
+                  <IconButton size="small" disabled sx={{ color: 'rgba(255, 255, 255, 0.2)' }}>
+                    <DeleteOutlineIcon fontSize="small" />
+                  </IconButton>
+                </span>
+              </Tooltip>
+            )}
+          </Box>
+        );
+      },
     },
   ];
 
@@ -165,19 +254,41 @@ const AdminUsersPage = () => {
       title="User Management"
       subtitle="Complete database directory of registered customers, account roles, and booking records"
       action={
-        <FormControl size="small" sx={{ minWidth: 160 }}>
-          <InputLabel id="user-role-label">Filter Role</InputLabel>
-          <Select
-            labelId="user-role-label"
-            value={roleFilter}
-            label="Filter Role"
-            onChange={(e) => setRoleFilter(e.target.value)}
-          >
-            <MenuItem value="">All Roles</MenuItem>
-            <MenuItem value="user">Regular Users</MenuItem>
-            <MenuItem value="admin">Administrators</MenuItem>
-          </Select>
-        </FormControl>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
+          {isSuperAdmin && (
+            <Button
+              variant="outlined"
+              color="error"
+              size="small"
+              startIcon={<DeleteSweepIcon />}
+              onClick={() => setClearDialogOpen(true)}
+              sx={{
+                borderColor: 'rgba(233, 69, 96, 0.4)',
+                color: '#e94560',
+                textTransform: 'none',
+                fontWeight: 600,
+                fontSize: '0.8rem',
+                '&:hover': { bgcolor: 'rgba(233, 69, 96, 0.1)', borderColor: '#e94560' },
+              }}
+            >
+              Clear All Users
+            </Button>
+          )}
+
+          <FormControl size="small" sx={{ minWidth: 160 }}>
+            <InputLabel id="user-role-label">Filter Role</InputLabel>
+            <Select
+              labelId="user-role-label"
+              value={roleFilter}
+              label="Filter Role"
+              onChange={(e) => setRoleFilter(e.target.value)}
+            >
+              <MenuItem value="">All Roles</MenuItem>
+              <MenuItem value="user">Regular Users</MenuItem>
+              <MenuItem value="admin">Administrators</MenuItem>
+            </Select>
+          </FormControl>
+        </Box>
       }
     >
       <DataTable
@@ -309,9 +420,90 @@ const AdminUsersPage = () => {
           )}
         </DialogContent>
 
-        <DialogActions sx={{ p: 2 }}>
+        <DialogActions sx={{ p: 2, justifyContent: 'space-between' }}>
+          {selectedUser && selectedUser.email !== 'superadmin@imovies.com' && (isSuperAdmin || selectedUser.role !== 'admin') ? (
+            <Button
+              color="error"
+              variant="outlined"
+              size="small"
+              startIcon={<DeleteOutlineIcon />}
+              onClick={() => {
+                setUserToDelete(selectedUser);
+                setDeleteDialogOpen(true);
+              }}
+            >
+              Delete {selectedUser.role === 'admin' ? 'Admin' : 'User'}
+            </Button>
+          ) : <Box />}
           <Button onClick={() => setDetailsOpen(false)} sx={{ color: 'text.secondary' }}>
             Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Delete Single User Dialog */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => !actionLoading && setDeleteDialogOpen(false)}
+        PaperProps={{
+          sx: { bgcolor: '#16213e', color: '#fff', borderRadius: 3, border: '1px solid rgba(255, 255, 255, 0.1)' },
+        }}
+      >
+        <DialogTitle sx={{ fontWeight: 700, color: '#e94560' }}>
+          Confirm Removal
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText sx={{ color: 'text.secondary' }}>
+            Are you sure you want to remove {userToDelete?.role === 'admin' ? 'administrator' : 'user'}{' '}
+            <strong>"{userToDelete?.name}"</strong> ({userToDelete?.email})? This account will be immediately deleted from the user directory.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button onClick={() => setDeleteDialogOpen(false)} disabled={actionLoading} sx={{ color: 'text.secondary' }}>
+            Cancel
+          </Button>
+          <Button
+            onClick={handleDeleteUser}
+            color="error"
+            variant="contained"
+            disabled={actionLoading}
+            startIcon={<DeleteOutlineIcon />}
+          >
+            {actionLoading ? 'Deleting...' : 'Delete Account'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Clear All Users Dialog (Super Admin) */}
+      <Dialog
+        open={clearDialogOpen}
+        onClose={() => !actionLoading && setClearDialogOpen(false)}
+        PaperProps={{
+          sx: { bgcolor: '#16213e', color: '#fff', borderRadius: 3, border: '1px solid rgba(233, 69, 96, 0.3)' },
+        }}
+      >
+        <DialogTitle sx={{ fontWeight: 700, color: '#e94560' }}>
+          Clear All Users Directory?
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText sx={{ color: 'text.secondary' }}>
+            <strong>Super Admin Action:</strong> This will purge all non-superadmin users and administrators from the system. Your Super Admin account will remain intact.
+            <br /><br />
+            Are you sure you want to proceed?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button onClick={() => setClearDialogOpen(false)} disabled={actionLoading} sx={{ color: 'text.secondary' }}>
+            Cancel
+          </Button>
+          <Button
+            onClick={handleClearAllUsers}
+            color="error"
+            variant="contained"
+            disabled={actionLoading}
+            startIcon={<DeleteSweepIcon />}
+          >
+            {actionLoading ? 'Clearing...' : 'Clear All Users'}
           </Button>
         </DialogActions>
       </Dialog>

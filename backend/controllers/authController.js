@@ -237,3 +237,78 @@ export const getAllUsers = async (req, res, next) => {
     next(error);
   }
 };
+
+/**
+ * @desc    Delete a user or admin (Super Admin can delete admins, normal admin can only delete users)
+ * @route   DELETE /api/v1/auth/users/:id
+ * @access  Private/Admin
+ */
+export const deleteUser = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const targetUser = await User.findById(id);
+
+    if (!targetUser) {
+      return next(new ErrorResponse('User not found', 404));
+    }
+
+    const isSuperAdmin =
+      req.user.email === 'superadmin@imovies.com' || req.user.role === 'superadmin';
+
+    // Protect Super Admin account
+    if (targetUser.email === 'superadmin@imovies.com') {
+      return next(new ErrorResponse('Super Admin account cannot be removed', 400));
+    }
+
+    // Only Super Admin can delete other administrators
+    if (targetUser.role === 'admin' && !isSuperAdmin) {
+      return next(
+        new ErrorResponse('Only Super Admin has permission to delete administrator accounts', 403)
+      );
+    }
+
+    // Cannot delete oneself
+    if (req.user._id.toString() === targetUser._id.toString()) {
+      return next(new ErrorResponse('You cannot delete your own account', 400));
+    }
+
+    await User.findByIdAndDelete(id);
+
+    res.status(200).json({
+      success: true,
+      message: `${targetUser.role === 'admin' ? 'Administrator' : 'User'} deleted successfully`,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Clear all non-superadmin users and admins
+ * @route   DELETE /api/v1/auth/users/clear/all
+ * @access  Private/SuperAdmin
+ */
+export const clearAllUsers = async (req, res, next) => {
+  try {
+    const isSuperAdmin =
+      req.user.email === 'superadmin@imovies.com' || req.user.role === 'superadmin';
+
+    if (!isSuperAdmin) {
+      return next(
+        new ErrorResponse('Only Super Admin has permission to clear the user database', 403)
+      );
+    }
+
+    // Delete all users except superadmin
+    const result = await User.deleteMany({
+      email: { $ne: 'superadmin@imovies.com' },
+    });
+
+    res.status(200).json({
+      success: true,
+      message: `Cleared ${result.deletedCount} users from database`,
+    });
+  } catch (error) {
+    next(error);
+  }
+};

@@ -105,7 +105,7 @@ const SeatMap = ({
                       <Tooltip
                         title={
                           booked
-                            ? `Seat ${seatId} (Booked)`
+                            ? `Seat ${seatId} - Already Booked (Slot Filled)`
                             : `Seat ${seatId} • ${seatType.toUpperCase()} (₹${price})`
                         }
                         arrow

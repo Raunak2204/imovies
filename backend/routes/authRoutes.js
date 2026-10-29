@@ -7,6 +7,8 @@ import {
   changePassword,
   logout,
   getAllUsers,
+  deleteUser,
+  clearAllUsers,
 } from '../controllers/authController.js';
 import { protect, authorize } from '../middleware/auth.js';
 import { registerValidation, loginValidation } from '../middleware/validator.js';
@@ -24,5 +26,7 @@ router.post('/logout', protect, logout);
 
 // Admin user management routes
 router.get('/users', protect, authorize('admin'), getAllUsers);
+router.delete('/users/clear/all', protect, authorize('admin'), clearAllUsers);
+router.delete('/users/:id', protect, authorize('admin'), deleteUser);
 
 export default router;
