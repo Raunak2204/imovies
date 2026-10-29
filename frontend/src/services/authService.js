@@ -112,6 +112,15 @@ const DEFAULT_DEMO_USERS = [
     createdAt: new Date('2024-01-01').toISOString(),
     bookings: [],
   },
+  {
+    _id: 'superadm_01',
+    name: 'Super Admin',
+    email: 'superadmin@imovies.com',
+    phone: '+91-9876543211',
+    role: 'admin',
+    createdAt: new Date('2024-01-01').toISOString(),
+    bookings: [],
+  },
 ];
 
 /**

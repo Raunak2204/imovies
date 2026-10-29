@@ -19,15 +19,20 @@ export const login = createAsyncThunk('auth/login', async (credentials, { reject
     return { token, user };
   } catch (err) {
     // Graceful fallback for demo accounts if backend is unreachable
-    if (credentials.email === 'rahul@example.com' || credentials.email === 'admin@imovies.com') {
+    if (
+      credentials.email === 'rahul@example.com' ||
+      credentials.email === 'admin@imovies.com' ||
+      credentials.email === 'superadmin@imovies.com'
+    ) {
+      const isSuper = credentials.email === 'superadmin@imovies.com';
       const isAdm = credentials.email.includes('admin');
       const mockUser = {
-        _id: isAdm ? 'admin_01' : 'user_01',
-        name: isAdm ? 'Admin User' : 'Rahul Sharma',
+        _id: isSuper ? 'superadmin_01' : isAdm ? 'admin_01' : 'user_01',
+        name: isSuper ? 'Super Admin' : isAdm ? 'Admin User' : 'Rahul Sharma',
         email: credentials.email,
         role: isAdm ? 'admin' : 'user',
       };
-      const mockToken = 'mock_jwt_token_' + (isAdm ? 'admin' : 'user');
+      const mockToken = 'mock_jwt_token_' + (isSuper ? 'superadmin' : isAdm ? 'admin' : 'user');
       localStorage.setItem('token', mockToken);
       localStorage.setItem('user', JSON.stringify(mockUser));
       return { token: mockToken, user: mockUser };

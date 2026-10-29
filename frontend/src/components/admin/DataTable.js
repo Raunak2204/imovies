@@ -29,11 +29,31 @@ const DataTable = ({
 
   const filteredRows = rows.filter((row) => {
     if (!searchTerm) return true;
-    const value = row[searchField];
-    if (typeof value === 'string') {
-      return value.toLowerCase().includes(searchTerm.toLowerCase());
+    const term = searchTerm.toLowerCase();
+
+    if (typeof searchField === 'function') {
+      return searchField(row, term);
     }
-    return true;
+
+    const value = row[searchField];
+    if (typeof value === 'string' && value.toLowerCase().includes(term)) {
+      return true;
+    }
+    if (value && typeof value === 'object') {
+      if (value.title && value.title.toLowerCase().includes(term)) return true;
+      if (value.name && value.name.toLowerCase().includes(term)) return true;
+    }
+
+    // Match customer name, email, phone, movie title, or booking number
+    if (row.user?.name?.toLowerCase().includes(term)) return true;
+    if (row.user?.email?.toLowerCase().includes(term)) return true;
+    if (row.user?.phone?.toLowerCase().includes(term)) return true;
+    if (row.movie?.title?.toLowerCase().includes(term)) return true;
+    if (row.theatre?.name?.toLowerCase().includes(term)) return true;
+    if (row.bookingNumber?.toLowerCase().includes(term)) return true;
+    if (row._id?.toLowerCase().includes(term)) return true;
+
+    return false;
   });
 
   const handleChangePage = (event, newPage) => {

@@ -142,16 +142,33 @@ const AdminShowsPage = () => {
     },
     {
       id: 'availableSeats',
-      label: 'Seats Left',
-      render: (row) => (
-        <Chip
-          label={`${row.availableSeats || 0} / ${row.totalSeats || 150}`}
-          size="small"
-          color={row.availableSeats > 20 ? 'success' : 'warning'}
-          variant="outlined"
-          sx={{ fontSize: '0.7rem' }}
-        />
-      ),
+      label: 'Booked / Seats Left',
+      render: (row) => {
+        const total = row.totalSeats || 150;
+        const left = row.availableSeats ?? total;
+        const booked = Math.max(0, total - left);
+        return (
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+            <Chip
+              label={`${booked} Persons Booked`}
+              size="small"
+              sx={{
+                bgcolor: booked > 0 ? 'rgba(233, 69, 96, 0.15)' : 'rgba(255, 255, 255, 0.05)',
+                color: booked > 0 ? '#e94560' : 'text.secondary',
+                fontWeight: 700,
+                fontSize: '0.68rem',
+              }}
+            />
+            <Chip
+              label={`${left} / ${total} Available`}
+              size="small"
+              color={left > 20 ? 'success' : 'warning'}
+              variant="outlined"
+              sx={{ fontSize: '0.68rem' }}
+            />
+          </Box>
+        );
+      },
     },
     {
       id: 'actions',

@@ -3,6 +3,7 @@ import {
   Box,
   Typography,
   Chip,
+  Avatar,
   IconButton,
   Button,
   Dialog,
@@ -13,9 +14,13 @@ import {
   Select,
   MenuItem,
   InputLabel,
+  Divider,
 } from '@mui/material';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
+import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined';
+import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
+import ConfirmationNumberOutlinedIcon from '@mui/icons-material/ConfirmationNumberOutlined';
 import { toast } from 'react-toastify';
 
 import AdminLayout from '../components/admin/AdminLayout';
@@ -72,22 +77,92 @@ const AdminBookingsPage = () => {
     },
     {
       id: 'customer',
-      label: 'Customer',
+      label: 'Customer Name',
       render: (row) => (
-        <div>
-          <Typography variant="body2" fontWeight={600} color="#fff">
-            {row.user?.name || 'Customer'}
-          </Typography>
-          <Typography variant="caption" color="text.secondary">
-            {row.user?.email || row.user?.phone}
-          </Typography>
-        </div>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <Avatar
+            sx={{
+              width: 32,
+              height: 32,
+              bgcolor: '#e94560',
+              fontSize: '0.8rem',
+              fontWeight: 700,
+            }}
+          >
+            {row.user?.name ? row.user.name.charAt(0).toUpperCase() : 'C'}
+          </Avatar>
+          <div>
+            <Typography variant="body2" fontWeight={700} color="#fff">
+              {row.user?.name || 'Customer'}
+            </Typography>
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+              {row.user?.email || 'No email'}
+            </Typography>
+            {row.user?.phone && (
+              <Typography variant="caption" sx={{ color: '#00adb5', fontSize: '0.7rem' }}>
+                {row.user.phone}
+              </Typography>
+            )}
+          </div>
+        </Box>
       ),
+    },
+    {
+      id: 'personsAndSeats',
+      label: 'Persons & Seats',
+      render: (row) => {
+        const personCount = row.seats?.length || 1;
+        return (
+          <Box>
+            <Chip
+              icon={<PeopleAltOutlinedIcon sx={{ fontSize: '14px !important' }} />}
+              label={`${personCount} ${personCount === 1 ? 'Person' : 'Persons'}`}
+              size="small"
+              sx={{
+                bgcolor: 'rgba(233, 69, 96, 0.15)',
+                color: '#e94560',
+                fontWeight: 700,
+                fontSize: '0.72rem',
+                mb: 0.5,
+              }}
+            />
+            <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+              {row.seats?.map((s, idx) => (
+                <Chip
+                  key={idx}
+                  label={s.seatNumber || s}
+                  size="small"
+                  sx={{
+                    height: 18,
+                    fontSize: '0.65rem',
+                    bgcolor: 'rgba(255, 255, 255, 0.08)',
+                    color: '#fff',
+                  }}
+                />
+              ))}
+            </Box>
+          </Box>
+        );
+      },
     },
     {
       id: 'movie',
       label: 'Movie',
-      render: (row) => row.movie?.title || 'Movie Title',
+      render: (row) => (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          {row.movie?.posterUrl && (
+            <Box
+              component="img"
+              src={row.movie.posterUrl}
+              alt=""
+              sx={{ width: 26, height: 36, borderRadius: 1, objectFit: 'cover' }}
+            />
+          )}
+          <Typography variant="body2" fontWeight={600} color="#fff">
+            {row.movie?.title || 'Movie Title'}
+          </Typography>
+        </Box>
+      ),
     },
     {
       id: 'show',
@@ -101,17 +176,6 @@ const AdminBookingsPage = () => {
             {formatDate(row.show?.date)} • {row.show?.startTime}
           </Typography>
         </div>
-      ),
-    },
-    {
-      id: 'seats',
-      label: 'Seats',
-      render: (row) => (
-        <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-          {row.seats?.map((s, idx) => (
-            <Chip key={idx} label={s.seatNumber || s} size="small" sx={{ height: 20, fontSize: '0.65rem' }} />
-          ))}
-        </Box>
       ),
     },
     {
@@ -185,8 +249,7 @@ const AdminBookingsPage = () => {
         columns={columns}
         rows={bookings}
         loading={loading}
-        searchPlaceholder="Search bookings..."
-        searchField="movie"
+        searchPlaceholder="Search by customer name, email, movie, or ID..."
       />
 
       {/* Booking Details Dialog */}
@@ -211,16 +274,56 @@ const AdminBookingsPage = () => {
         <DialogContent dividers sx={{ borderColor: 'rgba(255, 255, 255, 0.08)' }}>
           {selectedBooking && (
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <Box>
-                <Typography variant="subtitle2" color="text.secondary">
-                  Customer
+              <Box sx={{ bgcolor: 'rgba(255, 255, 255, 0.03)', p: 2, borderRadius: 2 }}>
+                <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', fontWeight: 700 }}>
+                  Customer Information
                 </Typography>
-                <Typography variant="body1" fontWeight={600}>
-                  {selectedBooking.user?.name} ({selectedBooking.user?.email})
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mt: 1 }}>
+                  <Avatar sx={{ bgcolor: '#e94560', width: 36, height: 36, fontWeight: 700 }}>
+                    {selectedBooking.user?.name ? selectedBooking.user.name.charAt(0).toUpperCase() : 'C'}
+                  </Avatar>
+                  <div>
+                    <Typography variant="body1" fontWeight={700}>
+                      {selectedBooking.user?.name || 'Customer'}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {selectedBooking.user?.email || 'No email provided'}
+                    </Typography>
+                    {selectedBooking.user?.phone && (
+                      <Typography variant="caption" sx={{ color: '#00adb5' }}>
+                        📞 {selectedBooking.user.phone}
+                      </Typography>
+                    )}
+                  </div>
+                </Box>
+              </Box>
+
+              <Box sx={{ bgcolor: 'rgba(233, 69, 96, 0.08)', p: 2, borderRadius: 2, border: '1px solid rgba(233, 69, 96, 0.2)' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+                  <Typography variant="subtitle2" fontWeight={700} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <PeopleAltOutlinedIcon fontSize="small" sx={{ color: '#e94560' }} />
+                    Persons / Guests Booked
+                  </Typography>
+                  <Chip
+                    label={`${selectedBooking.seats?.length || 1} ${selectedBooking.seats?.length === 1 ? 'Person' : 'Persons'}`}
+                    color="primary"
+                    size="small"
+                    sx={{ fontWeight: 700 }}
+                  />
+                </Box>
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+                  Reserved Seats Breakdown:
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Phone: {selectedBooking.user?.phone || 'N/A'}
-                </Typography>
+                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                  {selectedBooking.seats?.map((s, idx) => (
+                    <Chip
+                      key={idx}
+                      label={`${s.seatNumber || s} (${(s.seatType || 'Standard').toUpperCase()} - ₹${s.price || ''})`}
+                      size="small"
+                      sx={{ bgcolor: '#0f3460', color: '#fff', fontWeight: 600 }}
+                    />
+                  ))}
+                </Box>
               </Box>
 
               <Box>
@@ -236,17 +339,6 @@ const AdminBookingsPage = () => {
                 <Typography variant="body2" color="text.secondary">
                   {formatDate(selectedBooking.show?.date)} at {selectedBooking.show?.startTime}
                 </Typography>
-              </Box>
-
-              <Box>
-                <Typography variant="subtitle2" color="text.secondary">
-                  Reserved Seats ({selectedBooking.seats?.length})
-                </Typography>
-                <Box sx={{ display: 'flex', gap: 1, mt: 0.5, flexWrap: 'wrap' }}>
-                  {selectedBooking.seats?.map((s, idx) => (
-                    <Chip key={idx} label={s.seatNumber || s} color="primary" size="small" />
-                  ))}
-                </Box>
               </Box>
 
               <Box>
